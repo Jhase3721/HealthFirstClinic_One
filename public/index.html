@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthFirstClinic</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-image: url('healtfirstclinic.JPG'); /* Use existing image */
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: #333;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.7);
+      z-index: -1;
+    }
+    .header-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .section-bg {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    @media (max-width: 768px) {
+      .header-title {
+        font-size: 1.8rem;
+      }
+      header .flex {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .dashboard {
+        flex-direction: column;
+      }
+    }
+    @media (max-width: 640px) {
+      .header-title {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- Header Section -->
+  <header class="bg-gradient-to-r from-blue-600 to-emerald-600 text-white py-4 sticky top-0 z-10">
+    <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
+      <div class="flex items-center gap-4 w-full md:w-auto">
+        <a href="font.html" class="text-white hover:text-emerald-200 flex items-center"><i class="fas fa-home mr-2"></i> Home</a>
+        <button id="openLoginModal" class="text-white hover:text-emerald-200 flex items-center bg-transparent border-0">
+          <i class="fas fa-user-lock mr-2"></i> Admin Access
+        </button>
+        <h1 class="header-title flex-1 text-center md:text-left">HealthFirstClinic</h1>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dashboard Section -->
+  <section class="section-bg p-6 mb-6 container mx-auto">
+    <h2 class="text-xl md:text-2xl font-semibold text-blue-600 mb-4 flex items-center">
+      <i class="fas fa-tachometer-alt mr-2 text-blue-600"></i> Dashboard
+    </h2>
+    <div class="dashboard flex flex-col md:flex-row gap-6">
+      <div class="md:w-1/2">
+        <h3 class="text-lg font-semibold text-green-600 flex items-center">
+          <i class="fas fa-clinic-medical mr-3 text-xl"></i> Clinic Status
+        </h3>
+        <p id="clinicStatus" class="text-sm md:text-base">Loading...</p>
+      </div>
+      <div class="md:w-1/2">
+        <h3 class="text-lg font-semibold text-green-600 flex items-center">
+          <i class="fas fa-calendar-alt mr-3 text-xl"></i> Upcoming Events
+        </h3>
+        <ul id="eventList" class="space-y-2 text-sm md:text-base"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="flex-grow container mx-auto px-4 py-6">
+    <!-- Hero Section -->
+    <section id="appointment" class="section-bg p-6 mb-6 text-center">
+      <h2 class="text-2xl md:text-3xl font-semibold text-blue-600 mb-4">Your Trusted Healthcare Partner</h2>
+      <p class="text-gray-700 mb-4">Experience compassionate care at HealthFirstClinic, led by Dr. Sheila May T. Buniel.</p>
+      <button id="openAppointmentModal" class="bg-green-500 text-white px-6 py-2 rounded-full hover:bg-green-600 flex items-center mx-auto">
+        <i class="fas fa-calendar-check mr-2"></i> Book an Appointment
+      </button>
+    </section>
+
+    <!-- Admin Controls Section -->
+    <section id="adminControls" class="hidden section-bg p-6 mb-6">
+      <h2 class="text-lg md:text-xl font-semibold mb-2 text-blue-600 flex items-center">
+        <i class="fas fa-cog mr-2"></i> Admin Controls
+      </h2>
+      <div class="space-y-4">
+        <div>
+          <h3 class="text-md font-semibold text-green-600">Clinic Status</h3>
+          <p id="adminClinicStatus" class="text-sm md:text-base">Clinic status: Loading...</p>
+          <button id="toggleStatus" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">Toggle Clinic Status</button>
+        </div>
+        <div>
+          <h3 class="text-md font-semibold text-green-600">Add Event</h3>
+          <form id="eventForm" class="space-y-4">
+            <input type="text" id="eventTitle" placeholder="Event Title" class="w-full p-2 border rounded-md text-sm" required>
+            <input type="date" id="eventDate" class="w-full p-2 border rounded-md text-sm" required>
+            <input type="time" id="eventTime" class="w-full p-2 border rounded-md text-sm">
+            <div class="flex items-center">
+              <select id="eventDuration" class="w-full p-2 border rounded-md text-sm">
+                <option value="whole_day">Whole Day</option>
+                <option value="morning">Morning Half Day</option>
+                <option value="afternoon">Afternoon Half Day</option>
+              </select>
+            </div>
+            <select id="clinicStatusEvent" class="w-full p-2 border rounded-md text-sm" required>
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+            </select>
+            <textarea id="eventDescription" placeholder="Event Description" class="w-full p-2 border rounded-md text-sm" rows="4" required></textarea>
+            <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 text-sm">Add Event</button>
+          </form>
+        </div>
+        <div>
+          <h3 class="text-md font-semibold text-green-600">Manage Events</h3>
+          <ul id="adminEventList" class="space-y-2 text-sm md:text-base"></ul>
+        </div>
+        <button id="exitAdmin" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 text-sm">Exit Admin Mode</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-blue-600 text-white text-center py-4">
+    <p class="text-sm">© 2025 HealthFirstClinic. All rights reserved.</p>
+  </footer>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="closeLoginModal">×</span>
+      <h2 class="text-lg md:text-xl font-semibold mb-4 text-blue-600">Admin Login</h2>
+      <form id="loginForm" class="space-y-4">
+        <input type="text" id="username" placeholder="Username" class="w-full p-2 border rounded-md text-sm" required>
+        <input type="password" id="password" placeholder="Password" class="w-full p-2 border rounded-md text-sm" required>
+        <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 text-sm">Login</button>
+        <button type="button" id="closeLoginBtn" class="w-full bg-gray-300 p-2 rounded-md hover:bg-gray-400 text-sm mt-2">Close</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Appointment Modal -->
+  <div id="appointmentModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="closeAppointmentModal">×</span>
+      <h2 class="text-lg md:text-xl font-semibold mb-4 text-blue-600">Book Appointment</h2>
+      <form id="appointmentForm" class="space-y-4">
+        <input type="text" id="name" placeholder="Name" class="w-full p-2 border rounded-md text-sm" required>
+        <input type="number" id="age" placeholder="Age" class="w-full p-2 border rounded-md text-sm" required>
+        <input type="text" id="address" placeholder="Address" class="w-full p-2 border rounded-md text-sm" required>
+        <input type="email" id="email" placeholder="Email" class="w-full p-2 border rounded-md text-sm" required>
+        <input type="text" id="cpNumber" placeholder="Contact Number" class="w-full p-2 border rounded-md text-sm" required>
+        <input type="date" id="date" class="w-full p-2 border rounded-md text-sm" required>
+        <input type="time" id="time" class="w-full p-2 border rounded-md text-sm" required>
+        <input type="number" id="weight" placeholder="Weight (kg)" class="w-full p-2 border rounded-md text-sm" required>
+        <input type="text" id="bloodPressure" placeholder="Blood Pressure (e.g., 120/80)" class="w-full p-2 border rounded-md text-sm" required>
+        <input type="number" id="heartBeat" placeholder="Heart Rate (bpm)" class="w-full p-2 border rounded-md text-sm" required>
+        <textarea id="message" placeholder="Message" class="w-full p-2 border rounded-md text-sm" rows="4"></textarea>
+        <button type="submit" class="w-full bg-green-500 text-white p-2 rounded-md hover:bg-green-600 text-sm">Book Appointment</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="successModal" class="modal">
+    <div class="modal-content text-center">
+      <span class="close" id="closeSuccessModal">×</span>
+      <i class="fas fa-check-circle text-green-500 text-4xl mb-4"></i>
+      <p class="text-lg font-semibold">Appointment booked successfully</p>
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+    const discordWebhookUrl = 'https://discordapp.com/api/webhooks/1386546208629325937/hikp3zTi9pwKCROG0EVXPGpwucyrTsej2Obi19NrzoZ3F9Ti84Xru6Rgvbarj80ObQPb';
+
+    // Modal handling
+    const loginModal = document.getElementById('loginModal');
+    const appointmentModal = document.getElementById('appointmentModal');
+    const successModal = document.getElementById('successModal');
+    const openLoginModal = document.getElementById('openLoginModal');
+    const openAppointmentModal = document.getElementById('openAppointmentModal');
+    const closeLoginModal = document.getElementById('closeLoginModal');
+    const closeLoginBtn = document.getElementById('closeLoginBtn');
+    const closeAppointmentModal = document.getElementById('closeAppointmentModal');
+    const closeSuccessModal = document.getElementById('closeSuccessModal');
+
+    // Open appointment modal if URL has #appointment
+    if (window.location.hash === '#appointment') {
+      appointmentModal.style.display = 'flex';
+    }
+
+    openLoginModal.onclick = () => loginModal.style.display = 'flex';
+    closeLoginModal.onclick = closeLoginBtn.onclick = () => loginModal.style.display = 'none';
+    openAppointmentModal.onclick = () => appointmentModal.style.display = 'flex';
+    closeAppointmentModal.onclick = () => appointmentModal.style.display = 'none';
+    closeSuccessModal.onclick = () => successModal.style.display = 'none';
+
+    // Login form submission
+    document.getElementById('loginForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await response.json();
+      if (data.success) {
+        document.getElementById('adminControls').classList.remove('hidden');
+        loginModal.style.display = 'none';
+      } else {
+        alert('Invalid credentials');
+      }
+    };
+
+    // Appointment form submission with Discord notification
+    document.getElementById('appointmentForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const formData = {
+        name: document.getElementById('name').value,
+        age: document.getElementById('age').value,
+        address: document.getElementById('address').value,
+        email: document.getElementById('email').value,
+        cpNumber: document.getElementById('cpNumber').value,
+        date: document.getElementById('date').value,
+        time: document.getElementById('time').value,
+        weight: document.getElementById('weight').value,
+        bloodPressure: document.getElementById('bloodPressure').value,
+        heartBeat: document.getElementById('heartBeat').value,
+        message: document.getElementById('message').value
+      };
+      const response = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      const data = await response.json();
+      if (response.ok) {
+        const discordMessage = {
+          content: `New Appointment Booked:
+Name: ${formData.name}
+Age: ${formData.age}
+Address: ${formData.address}
+Email: ${formData.email}
+Contact Number: ${formData.cpNumber}
+Date: ${formData.date}
+Time: ${formData.time}
+Weight: ${formData.weight} kg
+Blood Pressure: ${formData.bloodPressure}
+Heart Rate: ${formData.heartBeat} bpm
+Message: ${formData.message || 'N/A'}`
+        };
+        await fetch(discordWebhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(discordMessage)
+        }).catch(error => {
+          console.error('Error sending Discord notification:', error);
+          alert('Error sending Discord notification.');
+        });
+        appointmentModal.style.display = 'none';
+        successModal.style.display = 'flex';
+        document.getElementById('appointmentForm').reset();
+      } else {
+        alert(data.error || 'Failed to book appointment');
+      }
+    };
+
+    // Event form submission
+    document.getElementById('eventForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const eventDuration = document.getElementById('eventDuration').value;
+      const eventData = {
+        title: document.getElementById('eventTitle').value,
+        date: document.getElementById('eventDate').value,
+        time: eventDuration !== 'whole_day' ? document.getElementById('eventTime').value || null : null,
+        duration: eventDuration,
+        clinicStatus: document.getElementById('clinicStatusEvent').value,
+        description: document.getElementById('eventDescription').value
+      };
+      const response = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(eventData)
+      });
+      if (response.ok) {
+        socket.emit('new-event');
+        document.getElementById('eventForm').reset();
+        loadClinicStatus();
+        loadEvents();
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to add event');
+      }
+    };
+
+    // Fetch and display events
+    async function loadEvents() {
+      try {
+        const response = await fetch('/api/events');
+        const events = await response.json();
+        const eventList = document.getElementById('eventList');
+        const adminEventList = document.getElementById('adminEventList');
+        eventList.innerHTML = '';
+        adminEventList.innerHTML = '';
+        if (events && Array.isArray(events) && events.length > 0) {
+          events.forEach(event => {
+            let durationDisplay;
+            switch (event.duration) {
+              case 'whole_day':
+                durationDisplay = 'Whole day';
+                break;
+              case 'morning':
+                durationDisplay = 'Morning half day';
+                break;
+              case 'afternoon':
+                durationDisplay = 'Afternoon half day';
+                break;
+              default:
+                durationDisplay = event.time || 'No duration specified';
+            }
+            const statusText = event.clinicStatus === 'open' ? 'Open' : event.clinicStatus === 'closed' ? 'Closed' : 'Unknown';
+            const publicLi = document.createElement('li');
+            publicLi.textContent = `${event.date || 'No date'}: ${event.description || 'No description'} - ${durationDisplay} (${statusText})`;
+            eventList.appendChild(publicLi);
+
+            const adminLi = document.createElement('li');
+            adminLi.textContent = `${event.title || 'Untitled'} - ${event.date || 'No date'}: ${event.description || 'No description'} - ${durationDisplay} (${statusText})`;
+            adminEventList.appendChild(adminLi);
+          });
+        } else {
+          eventList.innerHTML = '<li>No upcoming events</li>';
+          adminEventList.innerHTML = '<li>No upcoming events</li>';
+        }
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        document.getElementById('eventList').innerHTML = '<li>Error loading events</li>';
+        document.getElementById('adminEventList').innerHTML = '<li>Error loading events</li>';
+      }
+    }
+
+    // Fetch and display clinic status based on today's events
+    async function loadClinicStatus() {
+      try {
+        const response = await fetch('/api/events');
+        const events = await response.json();
+        const today = new Date().toISOString().split('T')[0];
+        const todayEvents = events.filter(event => event.date === today);
+        
+        let statusText, badgeClass;
+        if (todayEvents.length > 0) {
+          const event = todayEvents[0];
+          if (event.duration === 'whole_day') {
+            statusText = event.clinicStatus === 'closed' ? 'Clinic is closed all day' : 'Clinic is open all day';
+          } else if (event.duration === 'morning' || event.duration === 'afternoon') {
+            statusText = `Clinic is ${event.clinicStatus} for ${event.duration} half day`;
+          } else {
+            statusText = 'Clinic is open';
+          }
+          badgeClass = event.clinicStatus === 'open' ? 'bg-green-500' : 'bg-red-500';
+        } else {
+          const statusResponse = await fetch('/api/clinic-status');
+          const status = await statusResponse.json();
+          statusText = status.isOpen ? 'Clinic is open' : 'Clinic is closed';
+          badgeClass = status.isOpen ? 'bg-green-500' : 'bg-red-500';
+        }
+
+        document.getElementById('clinicStatus').innerHTML = `<span class="${badgeClass} px-2 py-1 rounded text-white">${statusText}</span>`;
+        const adminStatus = document.getElementById('adminClinicStatus');
+        if (adminStatus) {
+          adminStatus.textContent = `Clinic status: ${statusText}`;
+        }
+      } catch (error) {
+        console.error('Error fetching clinic status:', error);
+        document.getElementById('clinicStatus').innerHTML = `<span class="bg-gray-400 px-2 py-1 rounded text-white">Clinic status unavailable</span>`;
+        const adminStatus = document.getElementById('adminClinicStatus');
+        if (adminStatus) {
+          adminStatus.textContent = 'Clinic status: Unavailable';
+        }
+      }
+    }
+
+    // Toggle clinic status
+    document.getElementById('toggleStatus').onclick = async () => {
+      try {
+        const response = await fetch('/api/clinic-status/toggle', { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const statusText = data.isOpen ? 'Clinic is open' : 'Clinic is closed';
+          const badgeClass = data.isOpen ? 'bg-green-500' : 'bg-red-500';
+          document.getElementById('clinicStatus').innerHTML = `<span class="${badgeClass} px-2 py-1 rounded text-white">${statusText}</span>`;
+          const adminStatus = document.getElementById('adminClinicStatus');
+          if (adminStatus) {
+            adminStatus.textContent = `Clinic status: ${statusText}`;
+          }
+          socket.emit('open-close', data);
+        } else {
+          alert('Failed to toggle clinic status');
+        }
+      } catch (error) {
+        console.error('Error toggling clinic status:', error);
+        alert('Error toggling clinic status');
+      }
+    };
+
+    // Initial loads
+    loadEvents();
+    loadClinicStatus();
+
+    // Socket.IO event listeners
+    socket.on('refresh-events', () => {
+      loadEvents();
+      loadClinicStatus();
+    });
+
+    socket.on('open-close', (status) => {
+      const statusText = status.isOpen ? 'Clinic is open' : 'Clinic is closed';
+      const badgeClass = status.isOpen ? 'bg-green-500' : 'bg-red-500';
+      document.getElementById('clinicStatus').innerHTML = `<span class="${badgeClass} px-2 py-1 rounded text-white">${statusText}</span>`;
+      const adminStatus = document.getElementById('adminClinicStatus');
+      if (adminStatus) {
+        adminStatus.textContent = `Clinic status: ${statusText}`;
+      }
+    });
+
+    // Exit admin mode
+    document.getElementById('exitAdmin').onclick = () => {
+      document.getElementById('adminControls').classList.add('hidden');
+    };
+
+    // Handle event duration
+    const eventDurationSelect = document.getElementById('eventDuration');
+    const eventTimeInput = document.getElementById('eventTime');
+    eventDurationSelect.addEventListener('change', () => {
+      if (eventDurationSelect.value === 'whole_day') {
+        eventTimeInput.disabled = true;
+        eventTimeInput.value = '';
+      } else {
+        eventTimeInput.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

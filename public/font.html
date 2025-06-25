@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthFirstClinic - Welcome</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f0f0f0;
+      color: #333;
+    }
+    .header-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+    }
+    .section-bg {
+      background: #f9fafb;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    .nav-link {
+      transition: color 0.3s;
+      position: relative;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -2px;
+      left: 50%;
+      background-color: #ffffff;
+      transition: all 0.3s;
+    }
+    .nav-link:hover::after {
+      width: 100%;
+      left: 0;
+    }
+    .doctor-image {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 4px solid white;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+    .doctor-image:hover {
+      transform: scale(1.05);
+    }
+    .header-logo {
+      width: 32px;
+      height: 32px;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    @media (max-width: 768px) {
+      .header-title {
+        font-size: 1.8rem;
+      }
+      .doctor-image {
+        width: 120px;
+        height: 120px;
+      }
+      #cover h1 {
+        font-size: 3rem;
+      }
+      #cover p {
+        font-size: 1.5rem;
+      }
+      .header-logo {
+        width: 24px;
+        height: 24px;
+      }
+    }
+    @media (max-width: 640px) {
+      .header-title {
+        font-size: 1.5rem;
+      }
+      header nav a {
+        font-size: 0.9rem;
+      }
+      #cover h1 {
+        font-size: 2.5rem;
+      }
+      #cover p {
+        font-size: 1.25rem;
+      }
+      .header-logo {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- Header Section with Icon -->
+  <header class="bg-gradient-to-r from-blue-600 to-emerald-600 text-white py-6 sticky top-0 z-10">
+    <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
+      <h1 class="header-title flex-1 text-center md:text-left flex items-center">
+        <i class="fas fa-clinic-medical text-white mr-2"></i>HealthFirstClinic
+      </h1>
+      <nav class="flex gap-4 mt-2 md:mt-0 justify-end w-full md:w-auto">
+        <a href="#about" class="nav-link text-white">About</a>
+        <a href="#credentials" class="nav-link text-white">Credentials</a>
+        <a href="#services" class="nav-link text-white">Services</a>
+        <a href="#contact" class="nav-link text-white">Contact</a>
+        <a href="index.html#appointment" class="nav-link text-white">Book Checkup</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow container mx-auto px-4 py-10">
+    <!-- Cover Page Section -->
+    <section id="cover" class="relative h-screen flex items-center justify-center text-center" style="background-image: url('healtfirstclinic.JPG'); background-size: cover; background-position: center;">
+      <div class="absolute inset-0 bg-black opacity-50"></div>
+      <div class="relative z-10">
+        <h1 class="text-5xl md:text-7xl font-bold text-white mb-4" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);" data-aos="fade-up">Comprehensive Healthcare for Your Family</h1>
+        <p class="text-2xl md:text-3xl text-white mb-6" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);" data-aos="fade-up" data-aos-delay="200">Led by Dr. Sheila May T. Buniel, OB-GYN Specialist & General Physician with 25+ Years of Experience</p>
+        <a href="index.html#appointment" class="bg-blue-600 text-white px-8 py-4 rounded-full font-semibold hover:bg-blue-700 transition shadow-lg" data-aos="zoom-in" data-aos-delay="400">Book an Appointment</a>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section-bg p-6 mb-8">
+      <h2 class="text-xl md:text-2xl font-semibold mb-4 text-blue-600 flex items-center" data-aos="fade-up">
+        <i class="fas fa-user-md mr-2"></i> About HealthFirstClinic
+      </h2>
+      <div class="flex flex-col md:flex-row items-center gap-6">
+        <div class="md:w-1/3 flex justify-center" data-aos="fade-right">
+          <img src="Doc_Sheila.jpg" alt="Dr. Sheila May T. Buniel" class="doctor-image">
+        </div>
+        <div class="md:w-2/3" data-aos="fade-left">
+          <p class="text-base md:text-lg text-gray-700 doctor-description text-justify">
+            HealthFirstClinic is led by <strong>Dr. Sheila May T. Buniel</strong>, a highly experienced general physician and Obstetrics and Gynecology (OB-GYN) specialist. With over 25 years of dedicated service in Tandag City, Dr. Buniel provides comprehensive healthcare, addressing a wide range of medical needs for patients of all ages—from routine check-ups and preventive care as a general physician to specialized OB-GYN services for women’s health. Her dual expertise ensures holistic care, making HealthFirstClinic a trusted choice for families. We are committed to your well-being.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Credentials Section -->
+    <section id="credentials" class="section-bg p-6 mb-8">
+      <h2 class="text-xl md:text-2xl font-semibold mb-4 text-blue-600 flex items-center" data-aos="fade-up">
+        <i class="fas fa-certificate mr-2"></i> Our Credentials
+      </h2>
+      <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <li data-aos="zoom-in" data-aos-delay="0">
+          <a href="bir.jpg" target="_blank">
+            <img src="bir.jpg" alt="BIR Payment Slip" class="w-full h-auto rounded-md shadow-md hover:shadow-xl transition">
+          </a>
+          <p class="text-center mt-2">BIR Payment Slip</p>
+        </li>
+        <li data-aos="zoom-in" data-aos-delay="100">
+          <a href="dti.jpg" target="_blank">
+            <img src="dti.jpg" alt="Business Name Registration" class="w-full h-auto rounded-md shadow-md hover:shadow-xl transition">
+          </a>
+          <p class="text-center mt-2">Business Name Registration</p>
+        </li>
+        <li data-aos="zoom-in" data-aos-delay="200">
+          <a href="certificate_reg.jpg" target="_blank">
+            <img src="certificate_reg.jpg" alt="Certificate of Registration" class="w-full h-auto rounded-md shadow-md hover:shadow-xl transition">
+          </a>
+          <p class="text-center mt-2">Certificate of Registration</p>
+        </li>
+        <li data-aos="zoom-in" data-aos-delay="300">
+          <a href="receipt_invoice.jpg" target="_blank">
+            <img src="receipt_invoice.jpg" alt="Receipt Invoice" class="w-full h-auto rounded-md shadow-md hover:shadow-xl transition">
+          </a>
+          <p class="text-center mt-2">Receipt Invoice</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="section-bg p-6 mb-8">
+      <h2 class="text-xl md:text-2xl font-semibold mb-4 text-blue-600 flex items-center" data-aos="fade-up">
+        <i class="fas fa-stethoscope mr-2"></i> Our Services
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-gray-50 p-4 rounded-md transform transition hover:-translate-y-1 hover:shadow-lg" data-aos="fade-up" data-aos-delay="0">
+          <div class="flex items-start gap-4">
+            <i class="fas fa-stethoscope text-green-600 text-2xl"></i>
+            <div>
+              <h3 class="text-md font-semibold text-green-600">Medical Consultation</h3>
+              <p class="text-sm">General health check-ups and personalized consultations.</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-md transform transition hover:-translate-y-1 hover:shadow-lg" data-aos="fade-up" data-aos-delay="100">
+          <div class="flex items-start gap-4">
+            <i class="fas fa-file-alt text-green-600 text-2xl"></i>
+            <div>
+              <h3 class="text-md font-semibold text-green-600">Medical Certificate</h3>
+              <p class="text-sm">Issuance for work, school, or other requirements.</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-md transform transition hover:-translate-y-1 hover:shadow-lg" data-aos="fade-up" data-aos-delay="200">
+          <div class="flex items-start gap-4">
+            <i class="fas fa-microscope text-green-600 text-2xl"></i>
+            <div>
+              <h3 class="text-md font-semibold text-green-600">Pap Smear Consultation</h3>
+              <p class="text-sm">Screening and consultation for cervical health.</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-md transform transition hover:-translate-y-1 hover:shadow-lg" data-aos="fade-up" data-aos-delay="300">
+          <div class="flex items-start gap-4">
+            <i class="fas fa-syringe text-green-600 text-2xl"></i>
+            <div>
+              <h3 class="text-md font-semibold text-green-600">Cervical Cancer Vaccination</h3>
+              <p class="text-sm">Preventive vaccination against cervical cancer.</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-md transform transition hover:-translate-y-1 hover:shadow-lg" data-aos="fade-up" data-aos-delay="400">
+          <div class="flex items-start gap-4">
+            <i class="fas fa-procedures text-green-600 text-2xl"></i>
+            <div>
+              <h3 class="text-md font-semibold text-green-600">Foley Catheter Insertion and Removal</h3>
+              <p class="text-sm">Expert urinary catheter management.</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-md transform transition hover:-translate-y-1 hover:shadow-lg" data-aos="fade-up" data-aos-delay="500">
+          <div class="flex items-start gap-4">
+            <i class="fas fa-vial text-green-600 text-2xl"></i>
+            <div>
+              <h3 class="text-md font-semibold text-green-600">Vaccines Available</h3>
+              <ul class="list-disc pl-5 text-sm">
+                <li>Pneumonia Vaccine (Prevenar)</li>
+                <li>Flu Vaccine</li>
+                <li>Hepatitis B Vaccine</li>
+                <li>Tetanus</li>
+                <li>HPV Vaccine (Cervarix)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section-bg p-6 mb-8">
+      <h2 class="text-xl md:text-2xl font-semibold mb-4 text-blue-600 flex items-center" data-aos="fade-up">
+        <i class="fas fa-envelope mr-2"></i> Contact Us
+      </h2>
+      <div data-aos="fade-up" data-aos-delay="100">
+        <p class="text-base md:text-lg flex items-center gap-2"><i class="fas fa-map-marker-alt text-blue-600"></i> <strong>Address:</strong> Quezon Street, Tandag City, Surigao del Sur 8300</p>
+        <p class="text-base md:text-lg flex items-center gap-2"><i class="fas fa-clock text-blue-600"></i> <strong>Working Hours:</strong> Open 8 AM to 5 PM (Consultations start at 10 AM)</p>
+        <p class="text-base md:text-lg flex items-center gap-2"><i class="fas fa-phone text-blue-600"></i> For inquiries, please contact our secretary at <a href="tel:+639071600829" class="text-blue-600 hover:underline">09071600829</a></p>
+        <p class="text-base md:text-lg flex items-center gap-2"><i class="fas fa-calendar-alt text-blue-600"></i> Working days: Monday to Saturday</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-blue-600 text-white text-center py-4">
+    <div class="flex justify-center gap-4 mb-2">
+      <a href="#" class="text-white hover:text-gray-200"><i class="fab fa-facebook-f"></i></a>
+      <a href="#" class="text-white hover:text-gray-200"><i class="fab fa-twitter"></i></a>
+      <a href="#" class="text-white hover:text-gray-200"><i class="fab fa-instagram"></i></a>
+    </div>
+    <p class="text-sm">© 2025 HealthFirstClinic. All rights reserved.</p>
+  </footer>
+
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    AOS.init();
+    // Smooth scrolling for navigation links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+        const headerHeight = document.querySelector('header').offsetHeight;
+        const elementPosition = targetElement.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerHeight;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      });
+    });
+  </script>
+</body>
+</html>
