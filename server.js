@@ -1,4 +1,3 @@
-
 const express = require('express');
 const mongoose = require('mongoose');
 const http = require('http');
@@ -6,6 +5,7 @@ const socketIo = require('socket.io');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+const multer = require('multer');
 
 require('dotenv').config();
 
@@ -18,10 +18,13 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
+// Multer configuration for file uploads
+const upload = multer({ dest: 'public/uploads/' });
+
 // Middleware
 app.use(cookieParser());
 app.use(express.json());
-// Serve static files, but disable default index file
+// Serve static files, including uploads
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 // Root route to explicitly serve font.html
@@ -68,6 +71,7 @@ const appointmentSchema = new mongoose.Schema({
   bloodPressure: String,
   heartBeat: Number,
   message: String,
+  picture: String, // Added for picture URL
 });
 const Appointment = mongoose.model('Appointment', appointmentSchema);
 
@@ -153,11 +157,25 @@ app.get('/api/events', async (req, res) => {
   }
 });
 
-app.post('/api/appointments', async (req, res) => {
+// Updated appointment booking route with file upload
+app.post('/api/appointments', upload.single('picture'), async (req, res) => {
   try {
-    const appointment = new Appointment(req.body);
+    const appointment = new Appointment({
+      name: req.body.name,
+      age: req.body.age,
+      address: req.body.address,
+      email: req.body.email,
+      cpNumber: req.body.cpNumber,
+      date: req.body.date,
+      time: req.body.time,
+      weight: req.body.weight,
+      bloodPressure: req.body.bloodPressure,
+      heartBeat: req.body.heartBeat,
+      message: req.body.message,
+      picture: req.file ? `/uploads/${req.file.filename}` : null // Save picture URL
+    });
     await appointment.save();
-    res.status(201).json({ message: 'Appointment booked successfully' });
+    res.status(201).json({ message: 'Appointment booked successfully', pictureUrl: appointment.picture });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
