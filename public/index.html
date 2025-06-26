@@ -6,12 +6,13 @@
   <title>HealthFirstClinic</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     body {
       font-family: 'Roboto', sans-serif;
-      background-image: url('healtfirstclinic.JPG'); /* Use existing image */
+      background-image: url('healtfirstclinic.JPG');
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
@@ -24,7 +25,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(255, 255, 255, 0.7);
+      background: rgba( CNS255, 255, 255, 0.7);
       z-index: -1;
     }
     .header-title {
@@ -73,16 +74,27 @@
         font-size: 1.8rem;
       }
       header .flex {
-        flex-direction: column;
+        flex-direction: row;
         gap: 1rem;
+        justify-content: space-between;
       }
       .dashboard {
         flex-direction: column;
+      }
+      .modal-content {
+        width: 95%;
+        padding: 1rem;
+      }
+      .modal-content input, .modal-content textarea {
+        font-size: 0.9rem;
       }
     }
     @media (max-width: 640px) {
       .header-title {
         font-size: 1.5rem;
+      }
+      header .flex {
+        flex-wrap: wrap;
       }
     }
   </style>
@@ -92,7 +104,7 @@
   <header class="bg-gradient-to-r from-blue-600 to-emerald-600 text-white py-4 sticky top-0 z-10">
     <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
       <div class="flex items-center gap-4 w-full md:w-auto">
-        <a href="font.html" class="text-white hover:text-emerald-200 flex items-center"><i class="fas fa-home mr-2"></i> Home</a>
+        <a href="font.html" class="text-white hover:text-emerald-200'c flex items-center"><i class="fas fa-home mr-2"></i> Home</a>
         <button id="openLoginModal" class="text-white hover:text-emerald-200 flex items-center bg-transparent border-0">
           <i class="fas fa-user-lock mr-2"></i> Admin Access
         </button>
@@ -101,26 +113,27 @@
     </div>
   </header>
 
+  
   <!-- Dashboard Section -->
-  <section class="section-bg p-6 mb-6 container mx-auto">
-    <h2 class="text-xl md:text-2xl font-semibold text-blue-600 mb-4 flex items-center">
-      <i class="fas fa-tachometer-alt mr-2 text-blue-600"></i> Dashboard
-    </h2>
-    <div class="dashboard flex flex-col md:flex-row gap-6">
-      <div class="md:w-1/2">
-        <h3 class="text-lg font-semibold text-green-600 flex items-center">
-          <i class="fas fa-clinic-medical mr-3 text-xl"></i> Clinic Status
-        </h3>
-        <p id="clinicStatus" class="text-sm md:text-base">Loading...</p>
-      </div>
-      <div class="md:w-1/2">
-        <h3 class="text-lg font-semibold text-green-600 flex items-center">
-          <i class="fas fa-calendar-alt mr-3 text-xl"></i> Upcoming Events
-        </h3>
-        <ul id="eventList" class="space-y-2 text-sm md:text-base"></ul>
-      </div>
+<section class="section-bg p-6 mb-6 container mx-auto">
+  <h2 class="text-xl md:text-2xl font-semibold text-blue-600 mb-4 flex items-center">
+    <i class="fas fa-tachometer-alt mr-2 text-blue-600"></i> Dashboard
+  </h2>
+  <div class="dashboard flex flex-col md:flex-row gap-6">
+    <div class="md:w-1/2">
+      <h3 class="text-lg font-semibold text-green-600 flex items-center">
+        <i class="fas fa-clinic-medical mr-3 text-xl"></i> Clinic Status
+      </h3>
+      <p id="clinicStatus" class="text-sm md:text-base mt-2">Clinic is open</p>
     </div>
-  </section>
+    <div class="md:w-1/2">
+      <h3 class="text-lg font-semibold text-green-600 flex items-center">
+        <i class="fas fa-calendar-alt mr-3 text-xl"></i> Upcoming Events
+      </h3>
+      <ul id="eventList" class="space-y-2 text-sm md:text-base mt-2"></ul>
+    </div>
+  </div>
+</section>
 
   <!-- Main Content -->
   <main class="flex-grow container mx-auto px-4 py-6">
@@ -199,19 +212,44 @@
       <span class="close" id="closeAppointmentModal">×</span>
       <h2 class="text-lg md:text-xl font-semibold mb-4 text-blue-600">Book Appointment</h2>
       <form id="appointmentForm" class="space-y-4">
-        <input type="text" id="name" placeholder="Name" class="w-full p-2 border rounded-md text-sm" required>
-        <input type="number" id="age" placeholder="Age" class="w-full p-2 border rounded-md text-sm" required>
-        <input type="text" id="address" placeholder="Address" class="w-full p-2 border rounded-md text-sm" required>
-        <input type="email" id="email" placeholder="Email" class="w-full p-2 border rounded-md text-sm" required>
-        <input type="text" id="cpNumber" placeholder="Contact Number" class="w-full p-2 border rounded-md text-sm" required>
-        <input type="date" id="date" class="w-full p-2 border rounded-md text-sm" required>
-        <input type="time" id="time" class="w-full p-2 border rounded-md text-sm" required>
-        <input type="number" id="weight" placeholder="Weight (kg)" class="w-full p-2 border rounded-md text-sm" required>
-        <input type="text" id="bloodPressure" placeholder="Blood Pressure (e.g., 120/80)" class="w-full p-2 border rounded-md text-sm" required>
-        <input type="number" id="heartBeat" placeholder="Heart Rate (bpm)" class="w-full p-2 border rounded-md text-sm" required>
-        <textarea id="message" placeholder="Message" class="w-full p-2 border rounded-md text-sm" rows="4"></textarea>
-        <button type="submit" class="w-full bg-green-500 text-white p-2 rounded-md hover:bg-green-600 text-sm">Book Appointment</button>
-      </form>
+  <label for="name">Name:</label>
+  <input type="text" id="name" name="name" placeholder="Enter your full name" class="w-full p-2 border rounded-md text-sm" required>
+  
+  <label for="age">Age:</label>
+  <input type="number" id="age" name="age" placeholder="Enter your age" class="w-full p-2 border rounded-md text-sm" required>
+  
+  <label for="address">Address:</label>
+  <input type="text" id="address" name="address" placeholder="Enter your address" class="w-full p-2 border rounded-md text-sm" required>
+  
+  <label for="email">Email (optional):</label>
+  <input type="email" id="email" name="email" placeholder="Enter your email" class="w-full p-2 border rounded-md text-sm">
+  
+  <label for="cpNumber">Contact Number (11 digits):</label>
+  <input type="text" id="cpNumber" name="cpNumber" placeholder="Enter your contact number" class="w-full p-2 border rounded-md text-sm" maxlength="11" pattern="\d{11}" required>
+  
+  <label for="date">Preferred Appointment Date:</label>
+  <input type="date" id="date" name="date" placeholder="Select the date you prefer to come" class="w-full p-2 border rounded-md text-sm" required>
+  
+  <label for="time">Preferred Appointment Time:</label>
+  <input type="time" id="time" name="time" placeholder="Select the time you want to come" class="w-full p-2 border rounded-md text-sm" required>
+  
+  <label for="weight">Weight (kg, optional):</label>
+  <input type="number" id="weight" name="weight" placeholder="Enter your weight" class="w-full p-2 border rounded-md text-sm">
+  
+  <label for="bloodPressure">Blood Pressure (e.g., 120/80, optional):</label>
+  <input type="text" id="bloodPressure" name="bloodPressure" placeholder="Enter your blood pressure" class="w-full p-2 border rounded-md text-sm">
+  
+  <label for="heartBeat">Heart Rate (bpm, optional):</label>
+  <input type="number" id="heartBeat" name="heartBeat" placeholder="Enter your heart rate" class="w-full p-2 border rounded-md text-sm">
+  
+  <label for="message">Message (optional):</label>
+  <textarea id="message" name="message" placeholder="Any additional information" class="w-full p-2 border rounded-md text-sm" rows="4"></textarea>
+  
+  <label for="picture">Upload Picture (optional):</label>
+  <input type="file" id="picture" name="picture" accept="image/*" class="w-full p-2 border rounded-md text-sm">
+  
+  <button type="submit" class="w-full bg-green-500 text-white p-2 rounded-md hover:bg-green-600 text-sm">Book Appointment</button>
+</form>
     </div>
   </div>
 
@@ -239,7 +277,6 @@
     const closeAppointmentModal = document.getElementById('closeAppointmentModal');
     const closeSuccessModal = document.getElementById('closeSuccessModal');
 
-    // Open appointment modal if URL has #appointment
     if (window.location.hash === '#appointment') {
       appointmentModal.style.display = 'flex';
     }
@@ -269,42 +306,62 @@
       }
     };
 
-    // Appointment form submission with Discord notification
+    // Appointment form submission with PDF and Discord notification
     document.getElementById('appointmentForm').onsubmit = async (e) => {
       e.preventDefault();
-      const formData = {
-        name: document.getElementById('name').value,
-        age: document.getElementById('age').value,
-        address: document.getElementById('address').value,
-        email: document.getElementById('email').value,
-        cpNumber: document.getElementById('cpNumber').value,
-        date: document.getElementById('date').value,
-        time: document.getElementById('time').value,
-        weight: document.getElementById('weight').value,
-        bloodPressure: document.getElementById('bloodPressure').value,
-        heartBeat: document.getElementById('heartBeat').value,
-        message: document.getElementById('message').value
-      };
+      const formData = new FormData();
+      formData.append('name', document.getElementById('name').value);
+      formData.append('age', document.getElementById('age').value);
+      formData.append('address', document.getElementById('address').value);
+      formData.append('email', document.getElementById('email').value);
+      formData.append('cpNumber', document.getElementById('cpNumber').value);
+      formData.append('date', document.getElementById('date').value);
+      formData.append('time', document.getElementById('time').value);
+      formData.append('weight', document.getElementById('weight').value);
+      formData.append('bloodPressure', document.getElementById('bloodPressure').value);
+      formData.append('heartBeat', document.getElementById('heartBeat').value);
+      formData.append('message', document.getElementById('message').value);
+      const pictureFile = document.getElementById('picture').files[0];
+      if (pictureFile) formData.append('picture', pictureFile);
+
       const response = await fetch('/api/appointments', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: formData
       });
       const data = await response.json();
       if (response.ok) {
+        // Generate PDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text("Appointment Confirmation", 10, 10);
+        doc.text(`Name: ${formData.get('name')}`, 10, 20);
+        doc.text(`Age: ${formData.get('age')}`, 10, 30);
+        doc.text(`Address: ${formData.get('address')}`, 10, 40);
+        doc.text(`Email: ${formData.get('email') || 'N/A'}`, 10, 50);
+        doc.text(`Contact Number: ${formData.get('cpNumber')}`, 10, 60);
+        doc.text(`Date: ${formData.get('date')}`, 10, 70);
+        doc.text(`Time: ${formData.get('time')}`, 10, 80);
+        doc.text(`Weight: ${formData.get('weight') || 'N/A'} kg`, 10, 90);
+        doc.text(`Blood Pressure: ${formData.get('bloodPressure') || 'N/A'}`, 10, 100);
+        doc.text(`Heart Rate: ${formData.get('heartBeat') || 'N/A'} bpm`, 10, 110);
+        doc.text(`Message: ${formData.get('message') || 'N/A'}`, 10, 120);
+        doc.save("appointment_confirmation.pdf");
+
+        // Discord notification with picture URL if available
         const discordMessage = {
           content: `New Appointment Booked:
-Name: ${formData.name}
-Age: ${formData.age}
-Address: ${formData.address}
-Email: ${formData.email}
-Contact Number: ${formData.cpNumber}
-Date: ${formData.date}
-Time: ${formData.time}
-Weight: ${formData.weight} kg
-Blood Pressure: ${formData.bloodPressure}
-Heart Rate: ${formData.heartBeat} bpm
-Message: ${formData.message || 'N/A'}`
+Name: ${formData.get('name')}
+Age: ${formData.get('age')}
+Address: ${formData.get('address')}
+Email: ${formData.get('email') || 'N/A'}
+Contact Number: ${formData.get('cpNumber')}
+Date: ${formData.get('date')}
+Time: ${formData.get('time')}
+Weight: ${formData.get('weight') || 'N/A'} kg
+Blood Pressure: ${formData.get('bloodPressure') || 'N/A'}
+Heart Rate: ${formData.get('heartBeat') || 'N/A'} bpm
+Message: ${formData.get('message') || 'N/A'}
+Picture: ${data.pictureUrl || 'No picture uploaded'}`
         };
         await fetch(discordWebhookUrl, {
           method: 'POST',
@@ -314,6 +371,7 @@ Message: ${formData.message || 'N/A'}`
           console.error('Error sending Discord notification:', error);
           alert('Error sending Discord notification.');
         });
+
         appointmentModal.style.display = 'none';
         successModal.style.display = 'flex';
         document.getElementById('appointmentForm').reset();
@@ -395,7 +453,7 @@ Message: ${formData.message || 'N/A'}`
       }
     }
 
-    // Fetch and display clinic status based on today's events
+    // Fetch and display clinic status
     async function loadClinicStatus() {
       try {
         const response = await fetch('/api/events');
@@ -498,6 +556,9 @@ Message: ${formData.message || 'N/A'}`
         eventTimeInput.disabled = false;
       }
     });
+
+    // Note: Experimental automatic reminders require server-side implementation (e.g., Nodemailer + node-cron).
+    // Example: Check appointments daily and send email reminders for upcoming dates.
   </script>
 </body>
 </html>
