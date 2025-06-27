@@ -92,7 +92,7 @@
       margin-left: 1rem;
     }
     #cover {
-      background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('healtfirstclinic.JPG');
+      background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('healtfirstclinic.JPG');
       background-size: cover;
       background-position: center;
     }
@@ -168,12 +168,6 @@
         width: 120px;
         height: 120px;
       }
-      #cover h1 {
-        font-size: 3.5rem;
-      }
-      #cover p {
-        font-size: 1.75rem;
-      }
       .header-logo {
         width: 64px;
         height: 64px;
@@ -196,18 +190,12 @@
       .nav-link {
         font-size: 0.9rem;
       }
-      #cover h1 {
-        font-size: 2.5rem;
-      }
-      #cover p {
-        font-size: 1.25rem;
-      }
       .header-logo {
-        width: 48px;
-        height: 48px;
+        width: 40px;
+        height: 40px;
       }
       .header-title {
-        font-size: 1.75rem;
+        font-size: 1.5rem;
       }
       .section-bg {
         padding: 1rem;
@@ -221,14 +209,14 @@
 <body class="min-h-screen flex flex-col">
   <!-- Header Section -->
   <header class="bg-gradient-to-r from-indigo-700 to-teal-600 text-white py-6 sticky top-0 z-10">
-    <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+    <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6 md:gap-4">
       <div class="flex items-center gap-4">
         <div class="header-logo-container" id="openLogoModalFont">
           <img src="main_logo.jpg" alt="Main Logo" class="header-logo" data-aos="zoom-in">
         </div>
         <h1 class="header-title" data-aos="fade-right">HealthFirstClinic</h1>
       </div>
-      <nav class="flex gap-6 md:gap-8 mt-2 md:mt-0 justify-center md:justify-end md:flex-1 w-full md:w-auto">
+      <nav class="flex flex-wrap gap-4 sm:gap-6 md:gap-8 mt-2 md:mt-0 justify-center md:justify-end md:flex-1 w-full md:w-auto">
         <a href="#about" class="nav-link text-white" data-aos="fade-down" data-aos-delay="200">About</a>
         <a href="#credentials" class="nav-link text-white" data-aos="fade-down" data-aos-delay="300">Credentials</a>
         <a href="#services" class="nav-link text-white" data-aos="fade-down" data-aos-delay="400">Services</a>
@@ -242,10 +230,10 @@
   <main class="flex-grow container mx-auto px-4 py-10">
     <!-- Cover Page Section -->
     <section id="cover" class="relative h-screen flex items-center justify-center text-center">
-      <div class="relative z-10">
-        <h1 class="text-5xl md:text-7xl font-bold text-white mb-4 font-['Playfair_Display']" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.6);" data-aos="fade-up">Comprehensive Healthcare for Your Family</h1>
-        <p class="text-2xl md:text-3xl text-white mb-6 font-['Roboto'] font-light" style="text-shadow: 1px 1px 4px rgba(0,0,0,0.6);" data-aos="fade-up" data-aos-delay="200">Led by Dr. Sheila May T. Buniel, OB-GYN Specialist & General Physician with 25+ Years of Experience</p>
-        <a href="index.html#appointment" class="bg-teal-600 text-white px-8 py-4 rounded-full font-semibold hover:bg-teal-700 transition shadow-lg text-lg" data-aos="zoom-in" data-aos-delay="400">Book an Appointment</a>
+      <div class="relative z-10 space-y-6 sm:space-y-8">
+        <h1 class="text-3xl sm:text-4xl md:text-7xl font-bold text-white font-['Playfair_Display']" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.6);" data-aos="fade-up">Comprehensive Healthcare for Your Family</h1>
+        <p class="text-lg sm:text-xl md:text-3xl text-white font-['Roboto'] font-light" style="text-shadow: 1px 1px 4px rgba(0,0,0,0.6);" data-aos="fade-up" data-aos-delay="200">Led by Dr. Sheila May T. Buniel, OB-GYN Specialist & General Physician with 25+ Years of Experience</p>
+        <a href="index.html#appointment" class="bg-teal-600 text-white px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-full font-semibold hover:bg-teal-700 transition shadow-lg text-base sm:text-lg" data-aos="zoom-in" data-aos-delay="400">Book an Appointment</a>
       </div>
     </section>
 
