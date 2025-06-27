@@ -7,8 +7,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
   <style>
     body {
       font-family: 'Roboto', sans-serif;
@@ -16,7 +17,12 @@
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
-      color: #333;
+      color: #2D3748;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
     body::before {
       content: '';
@@ -25,15 +31,59 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba( CNS255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.85);
       z-index: -1;
     }
     .header-title {
       font-family: 'Playfair Display', serif;
-      font-size: 2.5rem;
-      font-weight: 700;
+      font-size: 2.75rem;
+      font-weight: 800;
       color: #ffffff;
-      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
+      letter-spacing: 0.05em;
+    }
+    .header-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+    }
+    .header-logo:hover {
+      transform: scale(1.05);
+    }
+    .nav-link {
+      font-family: 'Roboto', sans-serif;
+      font-weight: 400;
+      color: #ffffff;
+      position: relative;
+      transition: color 0.3s ease;
+    }
+    .nav-link:hover {
+      color: #D4AF37;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -4px;
+      left: 50%;
+      background-color: #D4AF37;
+      transition: all 0.3s ease;
+    }
+    .nav-link:hover::after {
+      width: 100%;
+      left: 0;
+    }
+    .section-bg {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+      margin-bottom: 2rem;
     }
     .modal {
       display: none;
@@ -42,166 +92,192 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.6);
       justify-content: center;
       align-items: center;
       z-index: 1000;
+      animation: fadeIn 0.3s ease;
     }
     .modal-content {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      padding: 2rem;
+      border-radius: 16px;
       width: 90%;
       max-width: 600px;
-      max-height: 90vh;
+      max-height: 85vh;
       overflow-y: auto;
       position: relative;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      animation: slideUp 0.4s ease;
     }
     .close {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 1.5rem;
+      top: 12px;
+      right: 12px;
+      font-size: 1.75rem;
+      color: #2D3748;
       cursor: pointer;
+      transition: color 0.3s ease;
     }
-    .section-bg {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    .close:hover {
+      color: #D4AF37;
+    }
+    button, input[type="submit"] {
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    button:hover, input[type="submit"]:hover {
+      transform: translateY(-2px);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
     @media (max-width: 768px) {
       .header-title {
-        font-size: 1.8rem;
+        font-size: 2rem;
       }
-      header .flex {
-        flex-direction: row;
-        gap: 1rem;
-        justify-content: space-between;
+      .header-logo {
+        width: 64px;
+        height: 64px;
       }
-      .dashboard {
-        flex-direction: column;
+      .section-bg {
+        padding: 1.5rem;
       }
       .modal-content {
         width: 95%;
-        padding: 1rem;
-      }
-      .modal-content input, .modal-content textarea {
-        font-size: 0.9rem;
+        padding: 1.5rem;
       }
     }
     @media (max-width: 640px) {
       .header-title {
-        font-size: 1.5rem;
+        font-size: 1.75rem;
       }
-      header .flex {
-        flex-wrap: wrap;
+      .header-logo {
+        width: 48px;
+        height: 48px;
+      }
+      .nav-link {
+        font-size: 0.9rem;
+      }
+      .section-bg {
+        padding: 1rem;
       }
     }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
   <!-- Header Section -->
-  <header class="bg-gradient-to-r from-blue-600 to-emerald-600 text-white py-4 sticky top-0 z-10">
-    <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
-      <div class="flex items-center gap-4 w-full md:w-auto">
-        <a href="font.html" class="text-white hover:text-emerald-200'c flex items-center"><i class="fas fa-home mr-2"></i> Home</a>
-        <button id="openLoginModal" class="text-white hover:text-emerald-200 flex items-center bg-transparent border-0">
-          <i class="fas fa-user-lock mr-2"></i> Admin Access
-        </button>
-        <h1 class="header-title flex-1 text-center md:text-left">HealthFirstClinic</h1>
+  <header class="bg-gradient-to-r from-indigo-700 to-teal-600 text-white py-4 sticky top-0 z-10">
+    <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-4">
+        <img src="main_logo.jpg" alt="Main Logo" class="header-logo" data-aos="zoom-in">
+        <h1 class="header-title">HealthFirstClinic</h1>
       </div>
+      <nav class="flex gap-6 md:gap-8">
+        <a href="font.html" class="nav-link flex items-center" data-aos="fade-down" data-aos-delay="100"><i class="fas fa-home mr-2"></i> Home</a>
+        <button id="openLoginModal" class="nav-link bg-transparent border-0 flex items-center" data-aos="fade-down" data-aos-delay="200"><i class="fas fa-user-lock mr-2"></i> Admin Access</button>
+      </nav>
     </div>
   </header>
 
-  
   <!-- Dashboard Section -->
-<section class="section-bg p-6 mb-6 container mx-auto">
-  <h2 class="text-xl md:text-2xl font-semibold text-blue-600 mb-4 flex items-center">
-    <i class="fas fa-tachometer-alt mr-2 text-blue-600"></i> Dashboard
-  </h2>
-  <div class="dashboard flex flex-col md:flex-row gap-6">
-    <div class="md:w-1/2">
-      <h3 class="text-lg font-semibold text-green-600 flex items-center">
-        <i class="fas fa-clinic-medical mr-3 text-xl"></i> Clinic Status
-      </h3>
-      <p id="clinicStatus" class="text-sm md:text-base mt-2">Clinic is open</p>
+  <section class="section-bg p-6 container mx-auto" data-aos="fade-up">
+    <h2 class="text-2xl md:text-3xl font-semibold text-indigo-700 mb-4 flex items-center font-['Playfair_Display']">
+      <i class="fas fa-tachometer-alt mr-2 text-indigo-700"></i> Dashboard
+    </h2>
+    <div class="dashboard flex flex-col md:flex-row gap-6">
+      <div class="md:w-1/2">
+        <h3 class="text-lg font-semibold text-teal-600 flex items-center">
+          <i class="fas fa-clinic-medical mr-3 text-xl"></i> Clinic Status
+        </h3>
+        <p id="clinicStatus" class="text-base mt-2">Clinic is open</p>
+      </div>
+      <div class="md:w-1/2">
+        <h3 class="text-lg font-semibold text-teal-600 flex items-center">
+          <i class="fas fa-calendar-alt mr-3 text-xl"></i> Upcoming Events
+        </h3>
+        <ul id="eventList" class="space-y-2 text-base mt-2">
+          <li>No clinic Today, Clinic will Resume Tomorrow 06/28/25</li>
+        </ul>
+      </div>
     </div>
-    <div class="md:w-1/2">
-      <h3 class="text-lg font-semibold text-green-600 flex items-center">
-        <i class="fas fa-calendar-alt mr-3 text-xl"></i> Upcoming Events
-      </h3>
-      <ul id="eventList" class="space-y-2 text-sm md:text-base mt-2"></ul>
-    </div>
-  </div>
-</section>
+  </section>
 
   <!-- Main Content -->
   <main class="flex-grow container mx-auto px-4 py-6">
     <!-- Hero Section -->
-    <section id="appointment" class="section-bg p-6 mb-6 text-center">
-      <h2 class="text-2xl md:text-3xl font-semibold text-blue-600 mb-4">Your Trusted Healthcare Partner</h2>
-      <p class="text-gray-700 mb-4">Experience compassionate care at HealthFirstClinic, led by Dr. Sheila May T. Buniel.</p>
-      <button id="openAppointmentModal" class="bg-green-500 text-white px-6 py-2 rounded-full hover:bg-green-600 flex items-center mx-auto">
+    <section id="appointment" class="section-bg p-6 text-center" data-aos="fade-up" data-aos-delay="100">
+      <h2 class="text-2xl md:text-3xl font-semibold text-indigo-700 mb-4 font-['Playfair_Display']">Your Trusted Healthcare Partner</h2>
+      <p class="text-gray-600 mb-6 text-lg">Experience compassionate care at HealthFirstClinic, led by Dr. Sheila May T. Buniel.</p>
+      <button id="openAppointmentModal" class="bg-teal-600 text-white px-8 py-3 rounded-full hover:bg-teal-700 flex items-center mx-auto text-base font-medium">
         <i class="fas fa-calendar-check mr-2"></i> Book an Appointment
       </button>
     </section>
 
     <!-- Admin Controls Section -->
-    <section id="adminControls" class="hidden section-bg p-6 mb-6">
-      <h2 class="text-lg md:text-xl font-semibold mb-2 text-blue-600 flex items-center">
+    <section id="adminControls" class="hidden section-bg p-6" data-aos="fade-up" data-aos-delay="200">
+      <h2 class="text-xl md:text-2xl font-semibold mb-4 text-indigo-700 flex items-center font-['Playfair_Display']">
         <i class="fas fa-cog mr-2"></i> Admin Controls
       </h2>
-      <div class="space-y-4">
+      <div class="space-y-6">
         <div>
-          <h3 class="text-md font-semibold text-green-600">Clinic Status</h3>
-          <p id="adminClinicStatus" class="text-sm md:text-base">Clinic status: Loading...</p>
-          <button id="toggleStatus" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">Toggle Clinic Status</button>
+          <h3 class="text-lg font-semibold text-teal-600">Clinic Status</h3>
+          <p id="adminClinicStatus" class="text-base">Clinic status: Loading...</p>
+          <button id="toggleStatus" class="mt-2 bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 text-base">Toggle Clinic Status</button>
         </div>
         <div>
-          <h3 class="text-md font-semibold text-green-600">Add Event</h3>
+          <h3 class="text-lg font-semibold text-teal-600">Add Event</h3>
           <form id="eventForm" class="space-y-4">
-            <input type="text" id="eventTitle" placeholder="Event Title" class="w-full p-2 border rounded-md text-sm" required>
-            <input type="date" id="eventDate" class="w-full p-2 border rounded-md text-sm" required>
-            <input type="time" id="eventTime" class="w-full p-2 border rounded-md text-sm">
-            <div class="flex items-center">
-              <select id="eventDuration" class="w-full p-2 border rounded-md text-sm">
-                <option value="whole_day">Whole Day</option>
-                <option value="morning">Morning Half Day</option>
-                <option value="afternoon">Afternoon Half Day</option>
-              </select>
-            </div>
-            <select id="clinicStatusEvent" class="w-full p-2 border rounded-md text-sm" required>
+            <input type="text" id="eventTitle" placeholder="Event Title" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500" required>
+            <input type="date" id="eventDate" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500" required>
+            <input type="time" id="eventTime" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500">
+            <select id="eventDuration" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500">
+              <option value="whole_day">Whole Day</option>
+              <option value="morning">Morning Half Day</option>
+              <option value="afternoon">Afternoon Half Day</option>
+            </select>
+            <select id="clinicStatusEvent" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500" required>
               <option value="open">Open</option>
               <option value="closed">Closed</option>
             </select>
-            <textarea id="eventDescription" placeholder="Event Description" class="w-full p-2 border rounded-md text-sm" rows="4" required></textarea>
-            <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 text-sm">Add Event</button>
+            <textarea id="eventDescription" placeholder="Event Description" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500" rows="4" required></textarea>
+            <button type="submit" class="w-full bg-indigo-600 text-white p-3 rounded-md hover:bg-indigo-700 text-base">Add Event</button>
           </form>
         </div>
         <div>
-          <h3 class="text-md font-semibold text-green-600">Manage Events</h3>
-          <ul id="adminEventList" class="space-y-2 text-sm md:text-base"></ul>
+          <h3 class="text-lg font-semibold text-teal-600">Manage Events</h3>
+          <ul id="adminEventList" class="space-y-2 text-base"></ul>
         </div>
-        <button id="exitAdmin" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 text-sm">Exit Admin Mode</button>
+        <button id="exitAdmin" class="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 text-base">Exit Admin Mode</button>
       </div>
     </section>
   </main>
 
   <!-- Footer -->
-  <footer class="bg-blue-600 text-white text-center py-4">
-    <p class="text-sm">© 2025 HealthFirstClinic. All rights reserved.</p>
+  <footer class="bg-indigo-700 text-white text-center py-6" data-aos="fade-up" data-aos-delay="300">
+    <div class="flex justify-center gap-6 mb-4">
+      <a href="#" class="text-white hover:text-[#D4AF37] text-xl"><i class="fab fa-facebook-f"></i></a>
+      <a href="#" class="text-white hover:text-[#D4AF37] text-xl"><i class="fab fa-twitter"></i></a>
+      <a href="#" class="text-white hover:text-[#D4AF37] text-xl"><i class="fab fa-instagram"></i></a>
+    </div>
+    <p class="text-sm font-light">© 2025 HealthFirstClinic. All rights reserved.</p>
   </footer>
 
   <!-- Login Modal -->
   <div id="loginModal" class="modal">
     <div class="modal-content">
       <span class="close" id="closeLoginModal">×</span>
-      <h2 class="text-lg md:text-xl font-semibold mb-4 text-blue-600">Admin Login</h2>
+      <h2 class="text-xl md:text-2xl font-semibold mb-4 text-indigo-700 font-['Playfair_Display']">Admin Login</h2>
       <form id="loginForm" class="space-y-4">
-        <input type="text" id="username" placeholder="Username" class="w-full p-2 border rounded-md text-sm" required>
-        <input type="password" id="password" placeholder="Password" class="w-full p-2 border rounded-md text-sm" required>
-        <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 text-sm">Login</button>
-        <button type="button" id="closeLoginBtn" class="w-full bg-gray-300 p-2 rounded-md hover:bg-gray-400 text-sm mt-2">Close</button>
+        <input type="text" id="username" placeholder="Username" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500" required>
+        <input type="password" id="password" placeholder="Password" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500" required>
+        <button type="submit" class="w-full bg-indigo-600 text-white p-3 rounded-md hover:bg-indigo-700 text-base">Login</button>
+        <button type="button" id="closeLoginBtn" class="w-full bg-gray-300 text-gray-800 p-3 rounded-md hover:bg-gray-400 text-base mt-2">Close</button>
       </form>
     </div>
   </div>
@@ -210,46 +286,34 @@
   <div id="appointmentModal" class="modal">
     <div class="modal-content">
       <span class="close" id="closeAppointmentModal">×</span>
-      <h2 class="text-lg md:text-xl font-semibold mb-4 text-blue-600">Book Appointment</h2>
+      <h2 class="text-xl md:text-2xl font-semibold mb-4 text-indigo-700 font-['Playfair_Display']">Book Appointment</h2>
       <form id="appointmentForm" class="space-y-4">
-  <label for="name">Name:</label>
-  <input type="text" id="name" name="name" placeholder="Enter your full name" class="w-full p-2 border rounded-md text-sm" required>
-  
-  <label for="age">Age:</label>
-  <input type="number" id="age" name="age" placeholder="Enter your age" class="w-full p-2 border rounded-md text-sm" required>
-  
-  <label for="address">Address:</label>
-  <input type="text" id="address" name="address" placeholder="Enter your address" class="w-full p-2 border rounded-md text-sm" required>
-  
-  <label for="email">Email (optional):</label>
-  <input type="email" id="email" name="email" placeholder="Enter your email" class="w-full p-2 border rounded-md text-sm">
-  
-  <label for="cpNumber">Contact Number (11 digits):</label>
-  <input type="text" id="cpNumber" name="cpNumber" placeholder="Enter your contact number" class="w-full p-2 border rounded-md text-sm" maxlength="11" pattern="\d{11}" required>
-  
-  <label for="date">Preferred Appointment Date:</label>
-  <input type="date" id="date" name="date" placeholder="Select the date you prefer to come" class="w-full p-2 border rounded-md text-sm" required>
-  
-  <label for="time">Preferred Appointment Time:</label>
-  <input type="time" id="time" name="time" placeholder="Select the time you want to come" class="w-full p-2 border rounded-md text-sm" required>
-  
-  <label for="weight">Weight (kg, optional):</label>
-  <input type="number" id="weight" name="weight" placeholder="Enter your weight" class="w-full p-2 border rounded-md text-sm">
-  
-  <label for="bloodPressure">Blood Pressure (e.g., 120/80, optional):</label>
-  <input type="text" id="bloodPressure" name="bloodPressure" placeholder="Enter your blood pressure" class="w-full p-2 border rounded-md text-sm">
-  
-  <label for="heartBeat">Heart Rate (bpm, optional):</label>
-  <input type="number" id="heartBeat" name="heartBeat" placeholder="Enter your heart rate" class="w-full p-2 border rounded-md text-sm">
-  
-  <label for="message">Message (optional):</label>
-  <textarea id="message" name="message" placeholder="Any additional information" class="w-full p-2 border rounded-md text-sm" rows="4"></textarea>
-  
-  <label for="picture">Upload Picture (optional):</label>
-  <input type="file" id="picture" name="picture" accept="image/*" class="w-full p-2 border rounded-md text-sm">
-  
-  <button type="submit" class="w-full bg-green-500 text-white p-2 rounded-md hover:bg-green-600 text-sm">Book Appointment</button>
-</form>
+        <label for="name" class="text-base font-medium text-gray-700">Name:</label>
+        <input type="text" id="name" name="name" placeholder="Enter your full name" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500" required>
+        <label for="age" class="text-base font-medium text-gray-700">Age:</label>
+        <input type="number" id="age" name="age" placeholder="Enter your age" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500" required>
+        <label for="address" class="text-base font-medium text-gray-700">Address:</label>
+        <input type="text" id="address" name="address" placeholder="Enter your address" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500" required>
+        <label for="email" class="text-base font-medium text-gray-700">Email (optional):</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500">
+        <label for="cpNumber" class="text-base font-medium text-gray-700">Contact Number (11 digits):</label>
+        <input type="text" id="cpNumber" name="cpNumber" placeholder="Enter your contact number" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500" maxlength="11" pattern="\d{11}" required>
+        <label for="date" class="text-base font-medium text-gray-700">Preferred Appointment Date:</label>
+        <input type="date" id="date" name="date" placeholder="Select the date you prefer to come" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500" required>
+        <label for="time" class="text-base font-medium text-gray-700">Preferred Appointment Time:</label>
+        <input type="time" id="time" name="time" placeholder="Select the time you want to come" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500" required>
+        <label for="weight" class="text-base font-medium text-gray-700">Weight (kg, optional):</label>
+        <input type="number" id="weight" name="weight" placeholder="Enter your weight" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500">
+        <label for="bloodPressure" class="text-base font-medium text-gray-700">Blood Pressure (e.g., 120/80, optional):</label>
+        <input type="text" id="bloodPressure" name="bloodPressure" placeholder="Enter your blood pressure" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500">
+        <label for="heartBeat" class="text-base font-medium text-gray-700">Heart Rate (bpm, optional):</label>
+        <input type="number" id="heartBeat" name="heartBeat" placeholder="Enter your heart rate" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500">
+        <label for="message" class="text-base font-medium text-gray-700">Message (optional):</label>
+        <textarea id="message" name="message" placeholder="Any additional information" class="w-full p-3 border border-gray-300 rounded-md text-base focus:ring-2 focus:ring-teal-500" rows="4"></textarea>
+        <label for="picture" class="text-base font-medium text-gray-700">Upload Picture (optional):</label>
+        <input type="file" id="picture" name="picture" accept="image/*" class="w-full p-3 border border-gray-300 rounded-md text-base">
+        <button type="submit" class="w-full bg-teal-600 text-white p-3 rounded-md hover:bg-teal-700 text-base">Book Appointment</button>
+      </form>
     </div>
   </div>
 
@@ -257,12 +321,14 @@
   <div id="successModal" class="modal">
     <div class="modal-content text-center">
       <span class="close" id="closeSuccessModal">×</span>
-      <i class="fas fa-check-circle text-green-500 text-4xl mb-4"></i>
-      <p class="text-lg font-semibold">Appointment booked successfully</p>
+      <i class="fas fa-check-circle text-teal-600 text-4xl mb-4"></i>
+      <p class="text-lg font-semibold text-indigo-700">Appointment booked successfully</p>
     </div>
   </div>
 
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <script>
+    AOS.init({ duration: 800, easing: 'ease-out', once: true });
     const socket = io();
     const discordWebhookUrl = 'https://discordapp.com/api/webhooks/1386546208629325937/hikp3zTi9pwKCROG0EVXPGpwucyrTsej2Obi19NrzoZ3F9Ti84Xru6Rgvbarj80ObQPb';
 
@@ -330,7 +396,6 @@
       });
       const data = await response.json();
       if (response.ok) {
-        // Generate PDF
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         doc.text("Appointment Confirmation", 10, 10);
@@ -347,7 +412,6 @@
         doc.text(`Message: ${formData.get('message') || 'N/A'}`, 10, 120);
         doc.save("appointment_confirmation.pdf");
 
-        // Discord notification with picture URL if available
         const discordMessage = {
           content: `New Appointment Booked:
 Name: ${formData.get('name')}
@@ -380,7 +444,6 @@ Picture: ${data.pictureUrl || 'No picture uploaded'}`
       }
     };
 
-    // Event form submission
     document.getElementById('eventForm').onsubmit = async (e) => {
       e.preventDefault();
       const eventDuration = document.getElementById('eventDuration').value;
@@ -401,59 +464,12 @@ Picture: ${data.pictureUrl || 'No picture uploaded'}`
         socket.emit('new-event');
         document.getElementById('eventForm').reset();
         loadClinicStatus();
-        loadEvents();
       } else {
         const data = await response.json();
         alert(data.error || 'Failed to add event');
       }
     };
 
-    // Fetch and display events
-    async function loadEvents() {
-      try {
-        const response = await fetch('/api/events');
-        const events = await response.json();
-        const eventList = document.getElementById('eventList');
-        const adminEventList = document.getElementById('adminEventList');
-        eventList.innerHTML = '';
-        adminEventList.innerHTML = '';
-        if (events && Array.isArray(events) && events.length > 0) {
-          events.forEach(event => {
-            let durationDisplay;
-            switch (event.duration) {
-              case 'whole_day':
-                durationDisplay = 'Whole day';
-                break;
-              case 'morning':
-                durationDisplay = 'Morning half day';
-                break;
-              case 'afternoon':
-                durationDisplay = 'Afternoon half day';
-                break;
-              default:
-                durationDisplay = event.time || 'No duration specified';
-            }
-            const statusText = event.clinicStatus === 'open' ? 'Open' : event.clinicStatus === 'closed' ? 'Closed' : 'Unknown';
-            const publicLi = document.createElement('li');
-            publicLi.textContent = `${event.date || 'No date'}: ${event.description || 'No description'} - ${durationDisplay} (${statusText})`;
-            eventList.appendChild(publicLi);
-
-            const adminLi = document.createElement('li');
-            adminLi.textContent = `${event.title || 'Untitled'} - ${event.date || 'No date'}: ${event.description || 'No description'} - ${durationDisplay} (${statusText})`;
-            adminEventList.appendChild(adminLi);
-          });
-        } else {
-          eventList.innerHTML = '<li>No upcoming events</li>';
-          adminEventList.innerHTML = '<li>No upcoming events</li>';
-        }
-      } catch (error) {
-        console.error('Error fetching events:', error);
-        document.getElementById('eventList').innerHTML = '<li>Error loading events</li>';
-        document.getElementById('adminEventList').innerHTML = '<li>Error loading events</li>';
-      }
-    }
-
-    // Fetch and display clinic status
     async function loadClinicStatus() {
       try {
         const response = await fetch('/api/events');
@@ -471,22 +487,22 @@ Picture: ${data.pictureUrl || 'No picture uploaded'}`
           } else {
             statusText = 'Clinic is open';
           }
-          badgeClass = event.clinicStatus === 'open' ? 'bg-green-500' : 'bg-red-500';
+          badgeClass = event.clinicStatus === 'open' ? 'bg-teal-600' : 'bg-red-600';
         } else {
           const statusResponse = await fetch('/api/clinic-status');
           const status = await statusResponse.json();
           statusText = status.isOpen ? 'Clinic is open' : 'Clinic is closed';
-          badgeClass = status.isOpen ? 'bg-green-500' : 'bg-red-500';
+          badgeClass = status.isOpen ? 'bg-teal-600' : 'bg-red-600';
         }
 
-        document.getElementById('clinicStatus').innerHTML = `<span class="${badgeClass} px-2 py-1 rounded text-white">${statusText}</span>`;
+        document.getElementById('clinicStatus').innerHTML = `<span class="${badgeClass} px-3 py-1 rounded-full text-white text-sm">${statusText}</span>`;
         const adminStatus = document.getElementById('adminClinicStatus');
         if (adminStatus) {
           adminStatus.textContent = `Clinic status: ${statusText}`;
         }
       } catch (error) {
         console.error('Error fetching clinic status:', error);
-        document.getElementById('clinicStatus').innerHTML = `<span class="bg-gray-400 px-2 py-1 rounded text-white">Clinic status unavailable</span>`;
+        document.getElementById('clinicStatus').innerHTML = `<span class="bg-gray-400 px-3 py-1 rounded-full text-white text-sm">Clinic status unavailable</span>`;
         const adminStatus = document.getElementById('adminClinicStatus');
         if (adminStatus) {
           adminStatus.textContent = 'Clinic status: Unavailable';
@@ -494,7 +510,6 @@ Picture: ${data.pictureUrl || 'No picture uploaded'}`
       }
     }
 
-    // Toggle clinic status
     document.getElementById('toggleStatus').onclick = async () => {
       try {
         const response = await fetch('/api/clinic-status/toggle', { 
@@ -504,8 +519,8 @@ Picture: ${data.pictureUrl || 'No picture uploaded'}`
         if (response.ok) {
           const data = await response.json();
           const statusText = data.isOpen ? 'Clinic is open' : 'Clinic is closed';
-          const badgeClass = data.isOpen ? 'bg-green-500' : 'bg-red-500';
-          document.getElementById('clinicStatus').innerHTML = `<span class="${badgeClass} px-2 py-1 rounded text-white">${statusText}</span>`;
+          const badgeClass = data.isOpen ? 'bg-teal-600' : 'bg-red-600';
+          document.getElementById('clinicStatus').innerHTML = `<span class="${badgeClass} px-3 py-1 rounded-full text-white text-sm">${statusText}</span>`;
           const adminStatus = document.getElementById('adminClinicStatus');
           if (adminStatus) {
             adminStatus.textContent = `Clinic status: ${statusText}`;
@@ -520,32 +535,26 @@ Picture: ${data.pictureUrl || 'No picture uploaded'}`
       }
     };
 
-    // Initial loads
-    loadEvents();
     loadClinicStatus();
 
-    // Socket.IO event listeners
     socket.on('refresh-events', () => {
-      loadEvents();
       loadClinicStatus();
     });
 
     socket.on('open-close', (status) => {
       const statusText = status.isOpen ? 'Clinic is open' : 'Clinic is closed';
-      const badgeClass = status.isOpen ? 'bg-green-500' : 'bg-red-500';
-      document.getElementById('clinicStatus').innerHTML = `<span class="${badgeClass} px-2 py-1 rounded text-white">${statusText}</span>`;
+      const badgeClass = status.isOpen ? 'bg-teal-600' : 'bg-red-600';
+      document.getElementById('clinicStatus').innerHTML = `<span class="${badgeClass} px-3 py-1 rounded-full text-white text-sm">${statusText}</span>`;
       const adminStatus = document.getElementById('adminClinicStatus');
       if (adminStatus) {
         adminStatus.textContent = `Clinic status: ${statusText}`;
       }
     });
 
-    // Exit admin mode
     document.getElementById('exitAdmin').onclick = () => {
       document.getElementById('adminControls').classList.add('hidden');
     };
 
-    // Handle event duration
     const eventDurationSelect = document.getElementById('eventDuration');
     const eventTimeInput = document.getElementById('eventTime');
     eventDurationSelect.addEventListener('change', () => {
@@ -556,9 +565,6 @@ Picture: ${data.pictureUrl || 'No picture uploaded'}`
         eventTimeInput.disabled = false;
       }
     });
-
-    // Note: Experimental automatic reminders require server-side implementation (e.g., Nodemailer + node-cron).
-    // Example: Check appointments daily and send email reminders for upcoming dates.
   </script>
 </body>
 </html>
