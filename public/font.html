@@ -253,9 +253,7 @@
           <h3 class="text-lg font-semibold text-teal-600 flex items-center">
             <i class="fas fa-calendar-alt mr-3 text-xl"></i> Upcoming Events
           </h3>
-          <ul id="eventList" class="space-y-2 text-base mt-2">
-            <li>No clinic Today, Clinic will Resume Tomorrow 06/28/25</li>
-          </ul>
+          <ul id="eventList" class="space-y-2 text-base mt-2"></ul>
         </div>
       </div>
     </section>
@@ -476,19 +474,45 @@
       }
     }
 
+    // Load upcoming events
+    async function loadUpcomingEvents() {
+      try {
+        const response = await fetch('/api/events');
+        const events = await response.json();
+        const today = new Date().toISOString().split('T')[0];
+        const upcomingEvents = events.filter(event => event.date >= today);
+        upcomingEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+        const eventList = document.getElementById('eventList');
+        eventList.innerHTML = '';
+        if (upcomingEvents.length === 0) {
+          eventList.innerHTML = '<li>No upcoming events</li>';
+        } else {
+          upcomingEvents.forEach(event => {
+            const li = document.createElement('li');
+            li.textContent = `${event.title} on ${event.date}`;
+            if (event.time) li.textContent += ` at ${event.time}`;
+            eventList.appendChild(li);
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        document.getElementById('eventList').innerHTML = '<li>Error loading events</li>';
+      }
+    }
+
     // Socket.IO event listeners
     socket.on('refresh-events', () => {
       loadClinicStatus();
+      loadUpcomingEvents();
     });
 
-    socket.on('open-close', (status) => {
-      const statusText = status.isOpen ? 'Clinic is open' : 'Clinic is closed';
-      const badgeClass = status.isOpen ? 'bg-teal-600' : 'bg-red-600';
-      document.getElementById('clinicStatus').innerHTML = `<span class="${badgeClass} px-3 py-1 rounded-full text-white text-sm">${statusText}</span>`;
+    socket.on('open-close', () => {
+      loadClinicStatus();
     });
 
     // Initial load
     loadClinicStatus();
+    loadUpcomingEvents();
   </script>
 </body>
 </html>
