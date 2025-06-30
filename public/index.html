@@ -541,15 +541,8 @@ Picture: ${data.pictureUrl || 'No picture uploaded'}`
           headers: { 'Content-Type': 'application/json' }
         });
         if (response.ok) {
-          const data = await response.json();
-          const statusText = data.isOpen ? 'Clinic is open' : 'Clinic is closed';
-          const badgeClass = data.isOpen ? 'bg-teal-600' : 'bg-red-600';
-          document.getElementById('clinicStatus').innerHTML = `<span class="${badgeClass} px-3 py-1 rounded-full text-white text-sm">${statusText}</span>`;
-          const adminStatus = document.getElementById('adminClinicStatus');
-          if (adminStatus) {
-            adminStatus.textContent = `Clinic status: ${statusText}`;
-          }
-          socket.emit('open-close', data);
+          loadClinicStatus(); // Update local status immediately
+          socket.emit('open-close');
         } else {
           alert('Failed to toggle clinic status');
         }
@@ -568,14 +561,8 @@ Picture: ${data.pictureUrl || 'No picture uploaded'}`
       loadUpcomingEvents();
     });
 
-    socket.on('open-close', (status) => {
-      const statusText = status.isOpen ? 'Clinic is open' : 'Clinic is closed';
-      const badgeClass = status.isOpen ? 'bg-teal-600' : 'bg-red-600';
-      document.getElementById('clinicStatus').innerHTML = `<span class="${badgeClass} px-3 py-1 rounded-full text-white text-sm">${statusText}</span>`;
-      const adminStatus = document.getElementById('adminClinicStatus');
-      if (adminStatus) {
-        adminStatus.textContent = `Clinic status: ${statusText}`;
-      }
+    socket.on('open-close', () => {
+      loadClinicStatus();
     });
 
     document.getElementById('exitAdmin').onclick = () => {
