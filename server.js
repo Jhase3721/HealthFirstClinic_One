@@ -141,7 +141,6 @@ app.post('/api/clinic-status/toggle', authMiddleware, async (req, res) => {
     const status = await ClinicStatus.findOne();
     status.isOpen = !status.isOpen;
     await status.save();
-    io.emit('clinic-status-changed', status);
     res.json(status);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -193,6 +192,7 @@ app.get('/api/clinic-status', async (req, res) => {
 io.on('connection', (socket) => {
   console.log('Client connected');
   socket.on('new-event', () => io.emit('refresh-events'));
+  socket.on('open-close', () => io.emit('open-close'));
 });
 
 const PORT = process.env.PORT || 3000;
