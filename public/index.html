@@ -175,7 +175,7 @@
   <header class="bg-gradient-to-r from-indigo-700 to-teal-600 text-white py-4 sticky top-0 z-10">
     <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
       <div class="flex items-center gap-4">
-        <img src="main_logo.jpg" alt="Main Logo" class="header-logo" data-aos="zoom-in">
+        <img src="main_logo.jpg" alt="Main Logo" class="header-logo">
         <h1 class="header-title">HealthFirstClinic</h1>
       </div>
       <nav class="flex gap-6 md:gap-8">
@@ -201,9 +201,7 @@
         <h3 class="text-lg font-semibold text-teal-600 flex items-center">
           <i class="fas fa-calendar-alt mr-3 text-xl"></i> Upcoming Events
         </h3>
-        <ul id="eventList" class="space-y-2 text-base mt-2">
-          <li>No clinic Today, Clinic will Resume Tomorrow 06/28/25</li>
-        </ul>
+        <ul id="eventList" class="space-y-2 text-base mt-2"></ul>
       </div>
     </div>
   </section>
@@ -348,7 +346,8 @@
     }
 
     openLoginModal.onclick = () => loginModal.style.display = 'flex';
-    closeLoginModal.onclick = closeLoginBtn.onclick = () => loginModal.style.display = 'none';
+    closeLoginModal.onclick = () => loginModal.style.display = 'none';
+    closeLoginBtn.onclick = () => loginModal.style.display = 'none';
     openAppointmentModal.onclick = () => appointmentModal.style.display = 'flex';
     closeAppointmentModal.onclick = () => appointmentModal.style.display = 'none';
     closeSuccessModal.onclick = () => successModal.style.display = 'none';
@@ -463,7 +462,7 @@ Picture: ${data.pictureUrl || 'No picture uploaded'}`
       if (response.ok) {
         socket.emit('new-event');
         document.getElementById('eventForm').reset();
-        loadClinicStatus();
+        loadUpcomingEvents(); // Update immediately after submission
       } else {
         const data = await response.json();
         alert(data.error || 'Failed to add event');
@@ -510,6 +509,31 @@ Picture: ${data.pictureUrl || 'No picture uploaded'}`
       }
     }
 
+    async function loadUpcomingEvents() {
+      try {
+        const response = await fetch('/api/events');
+        const events = await response.json();
+        const today = new Date().toISOString().split('T')[0];
+        const upcomingEvents = events.filter(event => event.date >= today);
+        upcomingEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+        const eventList = document.getElementById('eventList');
+        eventList.innerHTML = '';
+        if (upcomingEvents.length === 0) {
+          eventList.innerHTML = '<li>No upcoming events</li>';
+        } else {
+          upcomingEvents.forEach(event => {
+            const li = document.createElement('li');
+            li.textContent = `${event.title} on ${event.date}`;
+            if (event.time) li.textContent += ` at ${event.time}`;
+            eventList.appendChild(li);
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        document.getElementById('eventList').innerHTML = '<li>Error loading events</li>';
+      }
+    }
+
     document.getElementById('toggleStatus').onclick = async () => {
       try {
         const response = await fetch('/api/clinic-status/toggle', { 
@@ -535,10 +559,13 @@ Picture: ${data.pictureUrl || 'No picture uploaded'}`
       }
     };
 
+    // Initial load
     loadClinicStatus();
+    loadUpcomingEvents();
 
     socket.on('refresh-events', () => {
       loadClinicStatus();
+      loadUpcomingEvents();
     });
 
     socket.on('open-close', (status) => {
