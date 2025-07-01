@@ -6,6 +6,7 @@ const path = require('path');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
+const fetch = require('node-fetch');
 
 require('dotenv').config();
 
@@ -138,7 +139,11 @@ app.post('/api/events', authMiddleware, async (req, res) => {
 
 app.post('/api/clinic-status/toggle', authMiddleware, async (req, res) => {
   try {
-    const status = await ClinicStatus.findOne();
+    let status = await ClinicStatus.findOne();
+    if (!status) {
+      status = new ClinicStatus({ isOpen: true });
+      await status.save();
+    }
     status.isOpen = !status.isOpen;
     await status.save();
     res.json(status);
@@ -156,7 +161,6 @@ app.get('/api/events', async (req, res) => {
   }
 });
 
-// Updated appointment booking route with file upload
 app.post('/api/appointments', upload.single('picture'), async (req, res) => {
   try {
     const appointment = new Appointment({
@@ -174,6 +178,32 @@ app.post('/api/appointments', upload.single('picture'), async (req, res) => {
       picture: req.file ? `/uploads/${req.file.filename}` : null // Save picture URL
     });
     await appointment.save();
+
+    // Send Discord notification
+    const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
+    if (discordWebhookUrl) {
+      const discordMessage = {
+        content: `New Appointment Booked:
+Name: ${appointment.name}
+Age: ${appointment.age}
+Address: ${appointment.address}
+Email: ${appointment.email || 'N/A'}
+Contact Number: ${appointment.cpNumber}
+Date: ${appointment.date}
+Time: ${appointment.time}
+Weight: ${appointment.weight || 'N/A'} kg
+Blood Pressure: ${appointment.bloodPressure || 'N/A'}
+Heart Rate: ${appointment.heartBeat || 'N/A'} bpm
+Message: ${appointment.message || 'N/A'}
+Picture: ${appointment.picture || 'No picture uploaded'}`
+      };
+      await fetch(discordWebhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(discordMessage)
+      }).catch(err => console.error('Error sending Discord notification:', err));
+    }
+
     res.status(201).json({ message: 'Appointment booked successfully', pictureUrl: appointment.picture });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -190,9 +220,8 @@ app.get('/api/clinic-status', async (req, res) => {
 });
 
 io.on('connection', (socket) => {
-  console.log('Client connected');
   socket.on('new-event', () => io.emit('refresh-events'));
-  socket.on('open-close', () => io.emit('open-close'));
+  socket.on('open-close', (status) => io.emit('open-close', status));
 });
 
 const PORT = process.env.PORT || 3000;
