@@ -65,7 +65,7 @@
     }
     .nav-link::after {
       content: '';
-      position: absolute;
+      position: absolute_menuitem absolute;
       width: 0;
       height: 2px;
       bottom: -4px;
@@ -328,7 +328,6 @@
   <script>
     AOS.init({ duration: 800, easing: 'ease-out', once: true });
     const socket = io();
-    const discordWebhookUrl = 'https://discordapp.com/api/webhooks/1386546208629325937/hikp3zTi9pwKCROG0EVXPGpwucyrTsej2Obi19NrzoZ3F9Ti84Xru6Rgvbarj80ObQPb';
 
     // Modal handling
     const loginModal = document.getElementById('loginModal');
@@ -371,7 +370,7 @@
       }
     };
 
-    // Appointment form submission with PDF and Discord notification
+    // Appointment form submission with PDF (Discord notification moved to server)
     document.getElementById('appointmentForm').onsubmit = async (e) => {
       e.preventDefault();
       const formData = new FormData();
@@ -410,30 +409,6 @@
         doc.text(`Heart Rate: ${formData.get('heartBeat') || 'N/A'} bpm`, 10, 110);
         doc.text(`Message: ${formData.get('message') || 'N/A'}`, 10, 120);
         doc.save("appointment_confirmation.pdf");
-
-        const discordMessage = {
-          content: `New Appointment Booked:
-Name: ${formData.get('name')}
-Age: ${formData.get('age')}
-Address: ${formData.get('address')}
-Email: ${formData.get('email') || 'N/A'}
-Contact Number: ${formData.get('cpNumber')}
-Date: ${formData.get('date')}
-Time: ${formData.get('time')}
-Weight: ${formData.get('weight') || 'N/A'} kg
-Blood Pressure: ${formData.get('bloodPressure') || 'N/A'}
-Heart Rate: ${formData.get('heartBeat') || 'N/A'} bpm
-Message: ${formData.get('message') || 'N/A'}
-Picture: ${data.pictureUrl || 'No picture uploaded'}`
-        };
-        await fetch(discordWebhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(discordMessage)
-        }).catch(error => {
-          console.error('Error sending Discord notification:', error);
-          alert('Error sending Discord notification.');
-        });
 
         appointmentModal.style.display = 'none';
         successModal.style.display = 'flex';
