@@ -182,28 +182,48 @@ app.post('/api/appointments', upload.single('picture'), async (req, res) => {
     await appointment.save();
     console.log('Appointment saved:', appointment);
 
-    // Send Discord notification
+    // Send Discord notification with retry logic
     const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
     if (discordWebhookUrl) {
       console.log('Attempting to send Discord notification');
       console.log('Webhook URL:', discordWebhookUrl);
       const discordMessage = {
-        content: "Test message" // Simplified for testing
+        content: "Test message" // Keep it simple for now
       };
       console.log('Message content:', discordMessage.content);
-      try {
-        const response = await fetch(discordWebhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(discordMessage)
-        });
-        if (!response.ok) {
-          console.error('Discord notification failed:', response.status, await response.text());
-        } else {
-          console.log('Discord notification sent successfully');
+
+      const maxRetries = 3; // Try up to 3 times
+      let retryCount = 0;
+      let success = false;
+
+      while (retryCount < maxRetries && !success) {
+        try {
+          const response = await fetch(discordWebhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(discordMessage)
+          });
+          if (response.ok) {
+            console.log('Discord notification sent successfully');
+            success = true;
+          } else if (response.status === 429) {
+            // Rate limit hit, wait and retry
+            const retryAfter = response.headers.get('Retry-After') || 5; // Default to 5 seconds
+            console.log(`Rate limited. Retrying after ${retryAfter} seconds...`);
+            await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+            retryCount++;
+          } else {
+            console.error('Discord notification failed:', response.status, await response.text());
+            break;
+          }
+        } catch (err) {
+          console.error('Error sending Discord notification:', err);
+          break;
         }
-      } catch (err) {
-        console.error('Error sending Discord notification:', err);
+      }
+
+      if (!success) {
+        console.log('Failed to send Discord notification after retries');
       }
     } else {
       console.log('DISCORD_WEBHOOK_URL not set');
