@@ -10,10 +10,12 @@ const fetch = require('node-fetch');
 
 require('dotenv').config();
 
+// Log environment variables to check if they're set
 console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Set' : 'Undefined');
 console.log('ADMIN_USERNAME:', process.env.ADMIN_USERNAME);
 console.log('ADMIN_PASSWORD:', process.env.ADMIN_PASSWORD);
 console.log('SECRET_KEY:', process.env.SECRET_KEY ? 'Set' : 'Undefined');
+console.log('DISCORD_WEBHOOK_URL:', process.env.DISCORD_WEBHOOK_URL ? 'Set' : 'Undefined');
 
 const app = express();
 const server = http.createServer(app);
@@ -178,34 +180,38 @@ app.post('/api/appointments', upload.single('picture'), async (req, res) => {
       picture: req.file ? `/uploads/${req.file.filename}` : null // Save picture URL
     });
     await appointment.save();
+    console.log('Appointment saved:', appointment);
 
     // Send Discord notification
     const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
     if (discordWebhookUrl) {
+      console.log('Attempting to send Discord notification');
+      console.log('Webhook URL:', discordWebhookUrl);
       const discordMessage = {
-        content: `New Appointment Booked:
-Name: ${appointment.name}
-Age: ${appointment.age}
-Address: ${appointment.address}
-Email: ${appointment.email || 'N/A'}
-Contact Number: ${appointment.cpNumber}
-Date: ${appointment.date}
-Time: ${appointment.time}
-Weight: ${appointment.weight || 'N/A'} kg
-Blood Pressure: ${appointment.bloodPressure || 'N/A'}
-Heart Rate: ${appointment.heartBeat || 'N/A'} bpm
-Message: ${appointment.message || 'N/A'}
-Picture: ${appointment.picture || 'No picture uploaded'}`
+        content: "Test message" // Simplified for testing
       };
-      await fetch(discordWebhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(discordMessage)
-      }).catch(err => console.error('Error sending Discord notification:', err));
+      console.log('Message content:', discordMessage.content);
+      try {
+        const response = await fetch(discordWebhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(discordMessage)
+        });
+        if (!response.ok) {
+          console.error('Discord notification failed:', response.status, await response.text());
+        } else {
+          console.log('Discord notification sent successfully');
+        }
+      } catch (err) {
+        console.error('Error sending Discord notification:', err);
+      }
+    } else {
+      console.log('DISCORD_WEBHOOK_URL not set');
     }
 
     res.status(201).json({ message: 'Appointment booked successfully', pictureUrl: appointment.picture });
   } catch (err) {
+    console.error('Error booking appointment:', err);
     res.status(500).json({ error: err.message });
   }
 });
