@@ -92,7 +92,7 @@
       margin-left: 1rem;
     }
     #cover {
-      background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('healtfirstclinic.JPG');
+      background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('healthfirstclinic.JPG');
       background-size: cover;
       background-position: center;
     }
@@ -212,7 +212,7 @@
     <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6 md:gap-4">
       <div class="flex items-center gap-4">
         <div class="header-logo-container" id="openLogoModalFont">
-          <img src="main_logo.jpg" alt="Main Logo" class="header-logo" data-aos="zoom-in">
+          <img src="main_logo.jpg" alt="Main Logo" class="header-logo" data-aos="zoom-in" onerror="this.src='https://via.placeholder.com/80?text=Logo'">
         </div>
         <h1 class="header-title" data-aos="fade-right">HealthFirstClinic</h1>
       </div>
@@ -265,7 +265,7 @@
       </h2>
       <div class="flex flex-col md:flex-row items-center gap-8">
         <div class="md:w-1/3 flex justify-center" data-aos="fade-right">
-          <img src="Doc_Sheila.jpg" alt="Dr. Sheila May T. Buniel" class="doctor-image">
+          <img src="Doc_Sheila.jpg" alt="Dr. Sheila May T. Buniel" class="doctor-image" onerror="this.src='https://via.placeholder.com/160?text=Doctor'">
         </div>
         <div class="md:w-2/3" data-aos="fade-left">
           <p class="text-base md:text-lg text-gray-700 doctor-description text-justify">
@@ -284,25 +284,25 @@
       <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         <li data-aos="zoom-in" data-aos-delay="0">
           <a href="bir.jpg" target="_blank">
-            <img src="bir.jpg" alt="BIR Payment Slip" class="w-full h-auto rounded-md shadow-md hover:shadow-xl transition">
+            <img src="bir.jpg" alt="BIR Payment Slip" class="w-full h-auto rounded-md shadow-md hover:shadow-xl transition" onerror="this.src='https://via.placeholder.com/150?text=BIR'">
           </a>
           <p class="text-center mt-2 text-gray-700">BIR Payment Slip</p>
         </li>
         <li data-aos="zoom-in" data-aos-delay="100">
           <a href="dti.jpg" target="_blank">
-            <img src="dti.jpg" alt="Business Name Registration" class="w-full h-auto rounded-md shadow-md hover:shadow-xl transition">
+            <img src="dti.jpg" alt="Business Name Registration" class="w-full h-auto rounded-md shadow-md hover:shadow-xl transition" onerror="this.src='https://via.placeholder.com/150?text=DTI'">
           </a>
           <p class="text-center mt-2 text-gray-700">Business Name Registration</p>
         </li>
         <li data-aos="zoom-in" data-aos-delay="200">
           <a href="certificate_reg.jpg" target="_blank">
-            <img src="certificate_reg.jpg" alt="Certificate of Registration" class="w-full h-auto rounded-md shadow-md hover:shadow-xl transition">
+            <img src="certificate_reg.jpg" alt="Certificate of Registration" class="w-full h-auto rounded-md shadow-md hover:shadow-xl transition" onerror="this.src='https://via.placeholder.com/150?text=Certificate'">
           </a>
           <p class="text-center mt-2 text-gray-700">Certificate of Registration</p>
         </li>
         <li data-aos="zoom-in" data-aos-delay="300">
           <a href="receipt_invoice.jpg" target="_blank">
-            <img src="receipt_invoice.jpg" alt="Receipt Invoice" class="w-full h-auto rounded-md shadow-md hover:shadow-xl transition">
+            <img src="receipt_invoice.jpg" alt="Receipt Invoice" class="w-full h-auto rounded-md shadow-md hover:shadow-xl transition" onerror="this.src='https://via.placeholder.com/150?text=Receipt'">
           </a>
           <p class="text-center mt-2 text-gray-700">Receipt Invoice</p>
         </li>
@@ -406,7 +406,7 @@
   <div id="logoModal" class="modal">
     <div class="modal-content logo-modal-content">
       <span class="close" id="closeLogoModal">×</span>
-      <img src="main_logo.jpg" alt="Zoomed Main Logo">
+      <img src="main_logo.jpg" alt="Zoomed Main Logo" onerror="this.src='https://via.placeholder.com/300?text=Logo'">
     </div>
   </div>
 
@@ -420,8 +420,16 @@
     const openLogoModal = document.getElementById('openLogoModalFont');
     const closeLogoModal = document.getElementById('closeLogoModal');
 
-    openLogoModal.onclick = () => logoModal.style.display = 'flex';
-    closeLogoModal.onclick = () => logoModal.style.display = 'none';
+    if (openLogoModal) {
+      openLogoModal.onclick = () => logoModal.style.display = 'flex';
+    } else {
+      console.error('openLogoModalFont element not found');
+    }
+    if (closeLogoModal) {
+      closeLogoModal.onclick = () => logoModal.style.display = 'none';
+    } else {
+      console.error('closeLogoModal element not found');
+    }
 
     // Smooth scrolling for navigation links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -444,29 +452,10 @@
     // Load clinic status
     async function loadClinicStatus() {
       try {
-        const response = await fetch('/api/events');
-        const events = await response.json();
-        const today = new Date().toISOString().split('T')[0];
-        const todayEvents = events.filter(event => event.date === today);
-        
-        let statusText, badgeClass;
-        if (todayEvents.length > 0) {
-          const event = todayEvents[0];
-          if (event.duration === 'whole_day') {
-            statusText = event.clinicStatus === 'closed' ? 'Clinic is closed all day' : 'Clinic is open all day';
-          } else if (event.duration === 'morning' || event.duration === 'afternoon') {
-            statusText = `Clinic is ${event.clinicStatus} for ${event.duration} half day`;
-          } else {
-            statusText = 'Clinic is open';
-          }
-          badgeClass = event.clinicStatus === 'open' ? 'bg-teal-600' : 'bg-red-600';
-        } else {
-          const statusResponse = await fetch('/api/clinic-status');
-          const status = await statusResponse.json();
-          statusText = status.isOpen ? 'Clinic is open' : 'Clinic is closed';
-          badgeClass = status.isOpen ? 'bg-teal-600' : 'bg-red-600';
-        }
-
+        const statusResponse = await fetch('/api/clinic-status');
+        const defaultStatus = await statusResponse.json();
+        const statusText = defaultStatus.isOpen ? 'Clinic is open' : 'Clinic is closed';
+        const badgeClass = defaultStatus.isOpen ? 'bg-teal-600' : 'bg-red-600';
         document.getElementById('clinicStatus').innerHTML = `<span class="${badgeClass} px-3 py-1 rounded-full text-white text-sm">${statusText}</span>`;
       } catch (error) {
         console.error('Error fetching clinic status:', error);
@@ -513,6 +502,16 @@
     // Initial load
     loadClinicStatus();
     loadUpcomingEvents();
+
+    // Check for external script loading
+    window.addEventListener('load', () => {
+      if (!window.AOS) {
+        console.error('AOS library failed to load');
+      }
+      if (!window.io) {
+        console.error('Socket.IO library failed to load');
+      }
+    });
   </script>
 </body>
 </html>
