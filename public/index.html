@@ -13,10 +13,11 @@
   <style>
     body {
       font-family: 'Roboto', sans-serif;
-      background-image: url('healtfirstclinic.JPG');
+      background-image: url('healthfirstclinic.JPG');
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
+      background-color: #f0f0f0; /* Fallback background color */
       color: #2D3748;
       margin: 0;
       padding: 0;
@@ -65,7 +66,7 @@
     }
     .nav-link::after {
       content: '';
-      position: absolute_menuitem absolute;
+      position: absolute;
       width: 0;
       height: 2px;
       bottom: -4px;
@@ -175,7 +176,7 @@
   <header class="bg-gradient-to-r from-indigo-700 to-teal-600 text-white py-4 sticky top-0 z-10">
     <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
       <div class="flex items-center gap-4">
-        <img src="main_logo.jpg" alt="Main Logo" class="header-logo">
+        <img src="main_logo.jpg" alt="Main Logo" class="header-logo" onerror="this.src='https://via.placeholder.com/80?text=Logo'">
         <h1 class="header-title">HealthFirstClinic</h1>
       </div>
       <nav class="flex gap-6 md:gap-8">
@@ -225,8 +226,9 @@
       <div class="space-y-6">
         <div>
           <h3 class="text-lg font-semibold text-teal-600">Clinic Status</h3>
-          <p id="adminClinicStatus" class="text-base">Clinic status: Loading...</p>
-          <button id="toggleStatus" class="mt-2 bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 text-base">Toggle Clinic Status</button>
+          <p id="defaultClinicStatus" class="text-base">Default Clinic Status: Loading...</p>
+          <p id="effectiveClinicStatus" class="text-base">Today's Effective Status: Loading...</p>
+          <button id="toggleStatus" class="mt-2 bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 text-base">Toggle Default Status</button>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-teal-600">Add Event</h3>
@@ -340,150 +342,243 @@
     const closeAppointmentModal = document.getElementById('closeAppointmentModal');
     const closeSuccessModal = document.getElementById('closeSuccessModal');
 
-    if (window.location.hash === '#appointment') {
-      appointmentModal.style.display = 'flex';
+    // Debugging: Log element existence
+    console.log('openLoginModal:', openLoginModal);
+    console.log('openAppointmentModal:', openAppointmentModal);
+
+    function showModal(modal) {
+      if (modal) {
+        modal.style.display = 'flex';
+      } else {
+        console.error('Modal element not found');
+      }
     }
 
-    openLoginModal.onclick = () => loginModal.style.display = 'flex';
-    closeLoginModal.onclick = () => loginModal.style.display = 'none';
-    closeLoginBtn.onclick = () => loginModal.style.display = 'none';
-    openAppointmentModal.onclick = () => appointmentModal.style.display = 'flex';
-    closeAppointmentModal.onclick = () => appointmentModal.style.display = 'none';
-    closeSuccessModal.onclick = () => successModal.style.display = 'none';
+    function hideModal(modal) {
+      if (modal) {
+        modal.style.display = 'none';
+      } else {
+        console.error('Modal element not found');
+      }
+    }
+
+    if (window.location.hash === '#appointment') {
+      showModal(appointmentModal);
+    }
+
+    if (openLoginModal) {
+      openLoginModal.onclick = () => showModal(loginModal);
+    } else {
+      console.error('openLoginModal button not found');
+    }
+    if (closeLoginModal) {
+      closeLoginModal.onclick = () => hideModal(loginModal);
+    }
+    if (closeLoginBtn) {
+      closeLoginBtn.onclick = () => hideModal(loginModal);
+    }
+    if (openAppointmentModal) {
+      openAppointmentModal.onclick = () => showModal(appointmentModal);
+    } else {
+      console.error('openAppointmentModal button not found');
+    }
+    if (closeAppointmentModal) {
+      closeAppointmentModal.onclick = () => hideModal(appointmentModal);
+    }
+    if (closeSuccessModal) {
+      closeSuccessModal.onclick = () => hideModal(successModal);
+    }
 
     // Login form submission
-    document.getElementById('loginForm').onsubmit = async (e) => {
-      e.preventDefault();
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      const data = await response.json();
-      if (data.success) {
-        document.getElementById('adminControls').classList.remove('hidden');
-        loginModal.style.display = 'none';
-      } else {
-        alert('Invalid credentials');
-      }
-    };
-
-    // Appointment form submission with PDF (Discord notification moved to server)
-    document.getElementById('appointmentForm').onsubmit = async (e) => {
-      e.preventDefault();
-      const formData = new FormData();
-      formData.append('name', document.getElementById('name').value);
-      formData.append('age', document.getElementById('age').value);
-      formData.append('address', document.getElementById('address').value);
-      formData.append('email', document.getElementById('email').value);
-      formData.append('cpNumber', document.getElementById('cpNumber').value);
-      formData.append('date', document.getElementById('date').value);
-      formData.append('time', document.getElementById('time').value);
-      formData.append('weight', document.getElementById('weight').value);
-      formData.append('bloodPressure', document.getElementById('bloodPressure').value);
-      formData.append('heartBeat', document.getElementById('heartBeat').value);
-      formData.append('message', document.getElementById('message').value);
-      const pictureFile = document.getElementById('picture').files[0];
-      if (pictureFile) formData.append('picture', pictureFile);
-
-      const response = await fetch('/api/appointments', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await response.json();
-      if (response.ok) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.text("Appointment Confirmation", 10, 10);
-        doc.text(`Name: ${formData.get('name')}`, 10, 20);
-        doc.text(`Age: ${formData.get('age')}`, 10, 30);
-        doc.text(`Address: ${formData.get('address')}`, 10, 40);
-        doc.text(`Email: ${formData.get('email') || 'N/A'}`, 10, 50);
-        doc.text(`Contact Number: ${formData.get('cpNumber')}`, 10, 60);
-        doc.text(`Date: ${formData.get('date')}`, 10, 70);
-        doc.text(`Time: ${formData.get('time')}`, 10, 80);
-        doc.text(`Weight: ${formData.get('weight') || 'N/A'} kg`, 10, 90);
-        doc.text(`Blood Pressure: ${formData.get('bloodPressure') || 'N/A'}`, 10, 100);
-        doc.text(`Heart Rate: ${formData.get('heartBeat') || 'N/A'} bpm`, 10, 110);
-        doc.text(`Message: ${formData.get('message') || 'N/A'}`, 10, 120);
-        doc.save("appointment_confirmation.pdf");
-
-        appointmentModal.style.display = 'none';
-        successModal.style.display = 'flex';
-        document.getElementById('appointmentForm').reset();
-      } else {
-        alert(data.error || 'Failed to book appointment');
-      }
-    };
-
-    document.getElementById('eventForm').onsubmit = async (e) => {
-      e.preventDefault();
-      const eventDuration = document.getElementById('eventDuration').value;
-      const eventData = {
-        title: document.getElementById('eventTitle').value,
-        date: document.getElementById('eventDate').value,
-        time: eventDuration !== 'whole_day' ? document.getElementById('eventTime').value || null : null,
-        duration: eventDuration,
-        clinicStatus: document.getElementById('clinicStatusEvent').value,
-        description: document.getElementById('eventDescription').value
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+      loginForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        try {
+          const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+          });
+          const data = await response.json();
+          if (data.success) {
+            document.getElementById('adminControls').classList.remove('hidden');
+            hideModal(loginModal);
+          } else {
+            alert('Invalid credentials');
+          }
+        } catch (error) {
+          console.error('Login error:', error);
+          alert('An error occurred during login.');
+        }
       };
-      const response = await fetch('/api/events', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(eventData)
-      });
-      if (response.ok) {
-        socket.emit('new-event');
-        document.getElementById('eventForm').reset();
-        loadUpcomingEvents(); // Update immediately after submission
-      } else {
-        const data = await response.json();
-        alert(data.error || 'Failed to add event');
-      }
-    };
+    }
 
+    // Appointment form submission with PDF and improved error handling
+    const appointmentForm = document.getElementById('appointmentForm');
+    if (appointmentForm) {
+      appointmentForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const submitButton = document.querySelector('#appointmentForm button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Submitting...';
+
+        const formData = new FormData();
+        formData.append('name', document.getElementById('name').value);
+        formData.append('age', document.getElementById('age').value);
+        formData.append('address', document.getElementById('address').value);
+        formData.append('email', document.getElementById('email').value);
+        formData.append('cpNumber', document.getElementById('cpNumber').value);
+        formData.append('date', document.getElementById('date').value);
+        formData.append('time', document.getElementById('time').value);
+        formData.append('weight', document.getElementById('weight').value);
+        formData.append('bloodPressure', document.getElementById('bloodPressure').value);
+        formData.append('heartBeat', document.getElementById('heartBeat').value);
+        formData.append('message', document.getElementById('message').value);
+        const pictureFile = document.getElementById('picture').files[0];
+        if (pictureFile) formData.append('picture', pictureFile);
+
+        try {
+          console.log('Form submitted');
+          const response = await fetch('/api/appointments', {
+            method: 'POST',
+            body: formData
+          });
+          console.log('Response status:', response.status);
+          const data = await response.json();
+          console.log('Response data:', data);
+
+          if (response.ok) {
+            // Generate PDF
+            try {
+              const { jsPDF } = window.jspdf;
+              const doc = new jsPDF();
+              doc.text("Appointment Confirmation", 10, 10);
+              doc.text(`Name: ${formData.get('name')}`, 10, 20);
+              doc.text(`Age: ${formData.get('age')}`, 10, 30);
+              doc.text(`Address: ${formData.get('address')}`, 10, 40);
+              doc.text(`Email: ${formData.get('email') || 'N/A'}`, 10, 50);
+              doc.text(`Contact Number: ${formData.get('cpNumber')}`, 10, 60);
+              doc.text(`Date: ${formData.get('date')}`, 10, 70);
+              doc.text(`Time: ${formData.get('time')}`, 10, 80);
+              doc.text(`Weight: ${formData.get('weight') || 'N/A'} kg`, 10, 90);
+              doc.text(`Blood Pressure: ${formData.get('bloodPressure') || 'N/A'}`, 10, 100);
+              doc.text(`Heart Rate: ${formData.get('heartBeat') || 'N/A'} bpm`, 10, 110);
+              doc.text(`Message: ${formData.get('message') || 'N/A'}`, 10, 120);
+              doc.save("appointment_confirmation.pdf");
+            } catch (pdfError) {
+              console.error('Error generating PDF:', pdfError);
+            }
+
+            // Hide appointment modal and show success modal
+            hideModal(appointmentModal);
+            showModal(successModal);
+            document.getElementById('appointmentForm').reset();
+          } else {
+            alert(data.error || 'Failed to book appointment');
+          }
+        } catch (error) {
+          console.error('Error during form submission:', error);
+          alert('An error occurred while booking the appointment.');
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent = 'Book Appointment';
+        }
+      };
+    }
+
+    // Event form submission
+    const eventForm = document.getElementById('eventForm');
+    if (eventForm) {
+      eventForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const eventDuration = document.getElementById('eventDuration').value;
+        const eventData = {
+          title: document.getElementById('eventTitle').value,
+          date: document.getElementById('eventDate').value,
+          time: eventDuration !== 'whole_day' ? document.getElementById('eventTime').value || null : null,
+          duration: eventDuration,
+          clinicStatus: document.getElementById('clinicStatusEvent').value,
+          description: document.getElementById('eventDescription').value
+        };
+        try {
+          const response = await fetch('/api/events', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(eventData)
+          });
+          if (response.ok) {
+            socket.emit('new-event');
+            document.getElementById('eventForm').reset();
+            loadUpcomingEvents();
+            loadClinicStatus();
+          } else {
+            const data = await response.json();
+            alert(data.error || 'Failed to add event');
+          }
+        } catch (error) {
+          console.error('Error adding event:', error);
+          alert('An error occurred while adding the event.');
+        }
+      };
+    }
+
+    // Load clinic status
     async function loadClinicStatus() {
       try {
-        const response = await fetch('/api/events');
-        const events = await response.json();
+        // Fetch default clinic status
+        const statusResponse = await fetch('/api/clinic-status');
+        const defaultStatus = await statusResponse.json();
+        const defaultStatusText = defaultStatus.isOpen ? 'Clinic is open' : 'Clinic is closed';
+        const defaultBadgeClass = defaultStatus.isOpen ? 'bg-teal-600' : 'bg-red-600';
+
+        // Fetch events for today (for admin effective status)
+        const eventsResponse = await fetch('/api/events');
+        const events = await eventsResponse.json();
         const today = new Date().toISOString().split('T')[0];
         const todayEvents = events.filter(event => event.date === today);
-        
-        let statusText, badgeClass;
+
+        let effectiveStatusText, effectiveBadgeClass;
         if (todayEvents.length > 0) {
           const event = todayEvents[0];
           if (event.duration === 'whole_day') {
-            statusText = event.clinicStatus === 'closed' ? 'Clinic is closed all day' : 'Clinic is open all day';
+            effectiveStatusText = event.clinicStatus === 'closed' ? 'Clinic is closed all day' : 'Clinic is open all day';
           } else if (event.duration === 'morning' || event.duration === 'afternoon') {
-            statusText = `Clinic is ${event.clinicStatus} for ${event.duration} half day`;
+            effectiveStatusText = `Clinic is ${event.clinicStatus} for ${event.duration} half day`;
           } else {
-            statusText = 'Clinic is open';
+            effectiveStatusText = defaultStatus.isOpen ? 'Clinic is open' : 'Clinic is closed';
           }
-          badgeClass = event.clinicStatus === 'open' ? 'bg-teal-600' : 'bg-red-600';
+          effectiveBadgeClass = event.clinicStatus === 'open' ? 'bg-teal-600' : 'bg-red-600';
         } else {
-          const statusResponse = await fetch('/api/clinic-status');
-          const status = await statusResponse.json();
-          statusText = status.isOpen ? 'Clinic is open' : 'Clinic is closed';
-          badgeClass = status.isOpen ? 'bg-teal-600' : 'bg-red-600';
+          effectiveStatusText = defaultStatus.isOpen ? 'Clinic is open' : 'Clinic is closed';
+          effectiveBadgeClass = defaultStatus.isOpen ? 'bg-teal-600' : 'bg-red-600';
         }
 
-        document.getElementById('clinicStatus').innerHTML = `<span class="${badgeClass} px-3 py-1 rounded-full text-white text-sm">${statusText}</span>`;
-        const adminStatus = document.getElementById('adminClinicStatus');
-        if (adminStatus) {
-          adminStatus.textContent = `Clinic status: ${statusText}`;
+        // Update public dashboard with default status
+        document.getElementById('clinicStatus').innerHTML = `<span class="${defaultBadgeClass} px-3 py-1 rounded-full text-white text-sm">${defaultStatusText}</span>`;
+
+        // Update admin controls with both default and effective status
+        const defaultStatusElement = document.getElementById('defaultClinicStatus');
+        const effectiveStatusElement = document.getElementById('effectiveClinicStatus');
+        if (defaultStatusElement && effectiveStatusElement) {
+          defaultStatusElement.innerHTML = `Default Clinic Status: <span class="${defaultBadgeClass} px-3 py-1 rounded-full text-white text-sm">${defaultStatusText}</span>`;
+          effectiveStatusElement.innerHTML = `Today's Effective Status: <span class="${effectiveBadgeClass} px-3 py-1 rounded-full text-white text-sm">${effectiveStatusText}</span>`;
         }
       } catch (error) {
         console.error('Error fetching clinic status:', error);
         document.getElementById('clinicStatus').innerHTML = `<span class="bg-gray-400 px-3 py-1 rounded-full text-white text-sm">Clinic status unavailable</span>`;
-        const adminStatus = document.getElementById('adminClinicStatus');
-        if (adminStatus) {
-          adminStatus.textContent = 'Clinic status: Unavailable';
+        const defaultStatusElement = document.getElementById('defaultClinicStatus');
+        const effectiveStatusElement = document.getElementById('effectiveClinicStatus');
+        if (defaultStatusElement && effectiveStatusElement) {
+          defaultStatusElement.textContent = 'Default Clinic Status: Unavailable';
+          effectiveStatusElement.textContent = "Today's Effective Status: Unavailable";
         }
       }
     }
 
+    // Load upcoming events
     async function loadUpcomingEvents() {
       try {
         const response = await fetch('/api/events');
@@ -509,28 +604,33 @@
       }
     }
 
-    document.getElementById('toggleStatus').onclick = async () => {
-      try {
-        const response = await fetch('/api/clinic-status/toggle', { 
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        if (response.ok) {
-          loadClinicStatus(); // Update local status immediately
-          socket.emit('open-close');
-        } else {
-          alert('Failed to toggle clinic status');
+    // Toggle clinic status
+    const toggleStatusBtn = document.getElementById('toggleStatus');
+    if (toggleStatusBtn) {
+      toggleStatusBtn.onclick = async () => {
+        try {
+          const response = await fetch('/api/clinic-status/toggle', { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          if (response.ok) {
+            loadClinicStatus();
+            socket.emit('open-close');
+          } else {
+            alert('Failed to toggle clinic status');
+          }
+        } catch (error) {
+          console.error('Error toggling clinic status:', error);
+          alert('Error toggling clinic status');
         }
-      } catch (error) {
-        console.error('Error toggling clinic status:', error);
-        alert('Error toggling clinic status');
-      }
-    };
+      };
+    }
 
     // Initial load
     loadClinicStatus();
     loadUpcomingEvents();
 
+    // Socket events
     socket.on('refresh-events', () => {
       loadClinicStatus();
       loadUpcomingEvents();
@@ -540,18 +640,38 @@
       loadClinicStatus();
     });
 
-    document.getElementById('exitAdmin').onclick = () => {
-      document.getElementById('adminControls').classList.add('hidden');
-    };
+    // Exit admin mode
+    const exitAdminBtn = document.getElementById('exitAdmin');
+    if (exitAdminBtn) {
+      exitAdminBtn.onclick = () => {
+        document.getElementById('adminControls').classList.add('hidden');
+      };
+    }
 
+    // Event duration handling
     const eventDurationSelect = document.getElementById('eventDuration');
     const eventTimeInput = document.getElementById('eventTime');
-    eventDurationSelect.addEventListener('change', () => {
-      if (eventDurationSelect.value === 'whole_day') {
-        eventTimeInput.disabled = true;
-        eventTimeInput.value = '';
-      } else {
-        eventTimeInput.disabled = false;
+    if (eventDurationSelect && eventTimeInput) {
+      eventDurationSelect.addEventListener('change', () => {
+        if (eventDurationSelect.value === 'whole_day') {
+          eventTimeInput.disabled = true;
+          eventTimeInput.value = '';
+        } else {
+          eventTimeInput.disabled = false;
+        }
+      });
+    }
+
+    // Check for external script loading
+    window.addEventListener('load', () => {
+      if (!window.AOS) {
+        console.error('AOS library failed to load');
+      }
+      if (!window.io) {
+        console.error('Socket.IO library failed to load');
+      }
+      if (!window.jspdf) {
+        console.error('jsPDF library failed to load');
       }
     });
   </script>
