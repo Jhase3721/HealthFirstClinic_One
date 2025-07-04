@@ -8,7 +8,7 @@ const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const fetch = require('node-fetch');
 
-require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 // Log environment variables to check if they're set
 console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Set' : 'Undefined');
@@ -27,10 +27,9 @@ const upload = multer({ dest: 'public/uploads/' });
 // Middleware
 app.use(cookieParser());
 app.use(express.json());
-// Serve static files, including uploads
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
-// Root route to explicitly serve font.html
+// Root route to serve font.html
 app.get('/', (req, res) => {
   console.log('Serving font.html');
   const filePath = path.join(__dirname, 'public', 'font.html');
@@ -46,7 +45,7 @@ app.get('/', (req, res) => {
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI, {
-  serverSelectionTimeoutMS: 30000,
+  serverSelectionTimeoutMS: 30000
 })
   .then(async () => {
     console.log('Connected to MongoDB');
@@ -74,7 +73,7 @@ const appointmentSchema = new mongoose.Schema({
   bloodPressure: String,
   heartBeat: Number,
   message: String,
-  picture: String, // Added for picture URL
+  picture: String,
 });
 const Appointment = mongoose.model('Appointment', appointmentSchema);
 
@@ -107,9 +106,7 @@ app.post('/api/login', (req, res) => {
 
 const authMiddleware = (req, res, next) => {
   const token = req.cookies.token;
-  if (!token) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
   try {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
     req.user = decoded;
@@ -177,22 +174,47 @@ app.post('/api/appointments', upload.single('picture'), async (req, res) => {
       bloodPressure: req.body.bloodPressure,
       heartBeat: req.body.heartBeat,
       message: req.body.message,
-      picture: req.file ? `/uploads/${req.file.filename}` : null // Save picture URL
+      picture: req.file ? `/uploads/${req.file.filename}` : null
     });
     await appointment.save();
     console.log('Appointment saved:', appointment);
 
-    // Send Discord notification with retry logic
     const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
     if (discordWebhookUrl) {
       console.log('Attempting to send Discord notification');
-      console.log('Webhook URL:', discordWebhookUrl);
-      const discordMessage = {
-        content: "Test message" // Keep it simple for now
-      };
-      console.log('Message content:', discordMessage.content);
 
-      const maxRetries = 3; // Try up to 3 times
+      // Construct the Discord embed with full user information
+      const embed = {
+        title: "New Appointment Booked",
+        color: 5197365, // Indigo color
+        fields: [
+          { name: "Name", value: appointment.name || "N/A", inline: false },
+          { name: "Age", value: appointment.age ? appointment.age.toString() : "N/A", inline: false },
+          { name: "Address", value: appointment.address || "N/A", inline: false },
+          { name: "Email", value: appointment.email || "N/A", inline: false },
+          { name: "Contact Number", value: appointment.cpNumber || "N/A", inline: false },
+          { name: "Appointment Date", value: appointment.date || "N/A", inline: false },
+          { name: "Appointment Time", value: appointment.time || "N/A", inline: false },
+          { name: "Weight", value: appointment.weight ? `${appointment.weight} kg` : "N/A", inline: false },
+          { name: "Blood Pressure", value: appointment.bloodPressure || "N/A", inline: false },
+          { name: "Heart Rate", value: appointment.heartBeat ? `${appointment.heartBeat} bpm` : "N/A", inline: false },
+          { name: "Message", value: appointment.message || "N/A", inline: false }
+        ],
+        timestamp: new Date(),
+        footer: {
+          text: "HealthFirstClinic"
+        }
+      };
+
+      // Add thumbnail if picture is available
+      if (appointment.picture) {
+        const pictureUrl = `${req.protocol}://${req.get('host')}${appointment.picture}`;
+        embed.thumbnail = { url: pictureUrl };
+      }
+
+      const discordMessage = { embeds: [embed] };
+
+      const maxRetries = 3;
       let retryCount = 0;
       let success = false;
 
@@ -207,8 +229,7 @@ app.post('/api/appointments', upload.single('picture'), async (req, res) => {
             console.log('Discord notification sent successfully');
             success = true;
           } else if (response.status === 429) {
-            // Rate limit hit, wait and retry
-            const retryAfter = response.headers.get('Retry-After') || 5; // Default to 5 seconds
+            const retryAfter = response.headers.get('Retry-After') || 5;
             console.log(`Rate limited. Retrying after ${retryAfter} seconds...`);
             await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
             retryCount++;
@@ -221,10 +242,7 @@ app.post('/api/appointments', upload.single('picture'), async (req, res) => {
           break;
         }
       }
-
-      if (!success) {
-        console.log('Failed to send Discord notification after retries');
-      }
+      if (!success) console.log('Failed to send Discord notification after retries');
     } else {
       console.log('DISCORD_WEBHOOK_URL not set');
     }
